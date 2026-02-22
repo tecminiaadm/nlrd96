@@ -1,5 +1,5 @@
 // Configurações do Service Worker
-const APP_VERSION = '1.0.0';
+const APP_VERSION = '1.0.1';
 const CACHE_NAME = `agenda-mais-admin-${APP_VERSION}`;
 const GITHUB_REPO = '/nlrd96/';
 
@@ -9,7 +9,9 @@ const STATIC_ASSETS = [
   GITHUB_REPO + 'index.html',
   GITHUB_REPO + 'login.html',
   GITHUB_REPO + 'admin.html',
+  GITHUB_REPO + 'setup-admin.html',
   GITHUB_REPO + 'favicon.ico',
+  GITHUB_REPO + 'manifest.json',
   // CDNs externos (cache opcional)
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
   'https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap',
@@ -158,9 +160,7 @@ self.addEventListener('sync', event => {
 });
 
 async function syncPendingData() {
-  // Implementação para sincronizar dados pendentes quando online
   console.log('[SW] Sincronizando dados pendentes...');
-  
   // Aqui você pode adicionar lógica para sincronizar
   // dados pendentes com o Firebase
 }
@@ -232,32 +232,20 @@ self.addEventListener('message', event => {
         event.ports[0].postMessage({ success: false, error: error.message });
       });
   }
-});
 
-// ========== HANDLER OFFLINE ==========
-self.addEventListener('offline', () => {
-  console.log('[SW] Modo offline detectado');
-  // Você pode enviar uma mensagem para todos os clients
-  self.clients.matchAll().then(clients => {
-    clients.forEach(client => {
-      client.postMessage({
-        type: 'NETWORK_STATUS',
-        online: false,
-        timestamp: Date.now()
+  // ========== STATUS DE REDE (via mensagem da página) ==========
+  // Nota: eventos 'offline'/'online' pertencem ao window, não ao SW.
+  // Use navigator.onLine na página e envie mensagem ao SW se necessário.
+  if (event.data && event.data.type === 'NETWORK_STATUS') {
+    console.log('[SW] Status de rede recebido:', event.data.online ? 'online' : 'offline');
+    self.clients.matchAll().then(clients => {
+      clients.forEach(client => {
+        client.postMessage({
+          type: 'NETWORK_STATUS',
+          online: event.data.online,
+          timestamp: Date.now()
+        });
       });
     });
-  });
-});
-
-self.addEventListener('online', () => {
-  console.log('[SW] Modo online detectado');
-  self.clients.matchAll().then(clients => {
-    clients.forEach(client => {
-      client.postMessage({
-        type: 'NETWORK_STATUS',
-        online: true,
-        timestamp: Date.now()
-      });
-    });
-  });
+  }
 });

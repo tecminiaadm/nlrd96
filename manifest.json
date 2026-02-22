@@ -23,7 +23,7 @@
       "purpose": "any maskable"
     },
     {
-      "src": "/vendamaisadm/icon-512.png",
+      "src": "/nlrd96/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
@@ -49,19 +49,19 @@
       "name": "Usuários",
       "short_name": "Usuários",
       "description": "Gerenciar usuários do sistema",
-      "url": "/vendamaisadm/#usersTab"
+      "url": "/nlrd96/admin.html#usersTab"
     },
     {
       "name": "Pagamentos",
       "short_name": "Pagamentos",
       "description": "Aprovar pagamentos pendentes",
-      "url": "/vendamaisadm/#paymentsTab"
+      "url": "/nlrd96/admin.html#paymentsTab"
     },
     {
       "name": "Configurações",
       "short_name": "Config",
       "description": "Configurações do sistema",
-      "url": "/vendamaisadm/#settingsTab"
+      "url": "/nlrd96/admin.html#settingsTab"
     }
   ]
 }
