@@ -71,7 +71,8 @@
         if (data.role === 'admin') {
           window.location.replace('admin.html');
         } else {
-          window.location.replace('painel.html');
+          // Usuário comum não tem acesso — volta para login
+          window.location.replace('login.html');
         }
       } catch (e) {
         console.error('Erro ao verificar sessão:', e);
