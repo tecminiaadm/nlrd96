@@ -3,568 +3,553 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <title>Admin — AgendaFácil</title>
   <link rel="icon" type="image/x-icon" href="favicon.ico" />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #0d1117;
-      --surface: #161b22;
-      --surface2: #21262d;
-      --surface3: #30363d;
-      --border: rgba(255,255,255,0.07);
-      --text: #e6edf3;
-      --muted: #8b949e;
-      --accent: #FF6B6B;
-      --accent2: #FFA500;
-      --success: #3fb950;
-      --warning: #d29922;
-      --danger: #f85149;
-      --info: #58a6ff;
+      --bg: #f5f5f7;
+      --white: #ffffff;
+      --black: #0a0a0a;
+      --gray1: #1c1c1e;
+      --gray2: #3a3a3c;
+      --gray3: #636366;
+      --gray4: #aeaeb2;
+      --gray5: #d1d1d6;
+      --gray6: #e5e5ea;
+      --gray7: #f2f2f7;
+      --green: #34c759;
+      --orange: #ff9500;
+      --red: #ff3b30;
+      --blue: #007aff;
+      --radius: 16px;
+      --radius-sm: 10px;
     }
+
+    html, body { height: 100%; }
 
     body {
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       background: var(--bg);
-      color: var(--text);
+      color: var(--black);
       min-height: 100vh;
+      padding-top: env(safe-area-inset-top, 0px);
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* ── AUTH OVERLAY ── */
+    /* AUTH OVERLAY */
     #authOverlay {
-      position: fixed; inset: 0; background: var(--bg);
+      position: fixed; inset: 0; background: var(--white);
       display: flex; align-items: center; justify-content: center;
-      z-index: 9999; flex-direction: column; gap: 16px;
+      z-index: 9999; flex-direction: column; gap: 20px;
+    }
+    .auth-logo {
+      width: 72px; height: 72px; background: var(--black);
+      border-radius: 20px; display: flex; align-items: center;
+      justify-content: center; font-size: 32px;
     }
     .auth-spinner {
-      width: 48px; height: 48px;
-      border: 4px solid rgba(255,107,107,0.2);
-      border-top-color: var(--accent);
-      border-radius: 50%; animation: spin 0.8s linear infinite;
+      width: 32px; height: 32px;
+      border: 3px solid var(--gray6); border-top-color: var(--black);
+      border-radius: 50%; animation: spin 0.7s linear infinite;
     }
+    .auth-text { font-size: 0.85rem; color: var(--gray3); font-weight: 500; }
     @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
 
-    /* ── LAYOUT ── */
-    .layout { display: flex; min-height: 100vh; }
-
-    /* Sidebar */
-    .sidebar {
-      width: 240px; background: var(--surface);
-      border-right: 1px solid var(--border);
-      display: flex; flex-direction: column;
-      position: fixed; top: 0; left: 0; bottom: 0;
-      z-index: 100; transition: transform 0.3s ease;
+    /* TOP BAR */
+    .topbar {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      border-bottom: 1px solid var(--gray6);
+      padding: 0 16px; height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
     }
-    .sidebar-brand {
-      padding: 24px 20px;
-      border-bottom: 1px solid var(--border);
-      font-family: 'Syne', sans-serif;
-      font-weight: 800; font-size: 1.1rem;
-      display: flex; align-items: center; gap: 10px;
-      color: var(--text);
+    .topbar-brand {
+      font-size: 1.05rem; font-weight: 800; color: var(--black);
+      display: flex; align-items: center; gap: 8px; letter-spacing: -0.3px;
     }
-    .sidebar-brand .badge {
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      color: white; font-size: 0.65rem; padding: 2px 8px;
-      border-radius: 20px; font-weight: 700; margin-left: auto;
+    .topbar-badge {
+      font-size: 0.6rem; font-weight: 700; background: var(--black); color: white;
+      padding: 2px 7px; border-radius: 20px; letter-spacing: 0.5px;
     }
-    .sidebar-nav { flex: 1; padding: 12px 0; }
-    .nav-item {
-      display: flex; align-items: center; gap: 12px;
-      padding: 12px 20px; color: var(--muted);
-      cursor: pointer; transition: all 0.2s ease;
-      font-size: 0.9rem; font-weight: 500; border: none;
-      background: none; width: 100%; text-align: left;
-    }
-    .nav-item:hover { color: var(--text); background: var(--surface2); }
-    .nav-item.active { color: var(--accent); background: rgba(255,107,107,0.08); border-left: 3px solid var(--accent); }
-    .nav-item i { width: 18px; text-align: center; font-size: 1rem; }
-    .sidebar-footer { padding: 16px 20px; border-top: 1px solid var(--border); }
-    .user-info {
-      display: flex; align-items: center; gap: 10px;
-      margin-bottom: 12px;
-    }
-    .user-avatar {
-      width: 36px; height: 36px; border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 0.9rem; color: white;
-    }
-    .user-name { font-size: 0.85rem; font-weight: 500; color: var(--text); }
-    .user-role { font-size: 0.75rem; color: var(--muted); }
-    .btn-logout {
-      width: 100%; padding: 10px; background: rgba(248,81,73,0.1);
-      border: 1px solid rgba(248,81,73,0.2); border-radius: 8px;
-      color: var(--danger); font-size: 0.85rem; cursor: pointer;
-      transition: all 0.2s ease; display: flex; align-items: center;
-      justify-content: center; gap: 8px; font-weight: 500;
-    }
-    .btn-logout:hover { background: rgba(248,81,73,0.2); }
-
-    /* Main */
-    .main { flex: 1; margin-left: 240px; padding: 28px; }
-
-    /* Page */
-    .page { display: none; animation: fadeIn 0.3s ease; }
-    .page.active { display: block; }
-    @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
-
-    /* Page header */
-    .page-header { margin-bottom: 24px; }
-    .page-header h1 {
-      font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 800;
-      color: var(--text); display: flex; align-items: center; gap: 12px;
-    }
-    .page-header p { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
-
-    /* Stats grid */
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
-    .stat-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 12px; padding: 20px;
-    }
-    .stat-label { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-    .stat-value { font-size: 2rem; font-weight: 700; color: var(--text); font-family: 'Syne', sans-serif; }
-    .stat-sub { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
-    .stat-card.success { border-color: rgba(63,185,80,0.3); }
-    .stat-card.warning { border-color: rgba(210,153,34,0.3); }
-    .stat-card.danger { border-color: rgba(248,81,73,0.3); }
-    .stat-card.info { border-color: rgba(88,166,255,0.3); }
-    .stat-value.success { color: var(--success); }
-    .stat-value.warning { color: var(--warning); }
-    .stat-value.danger { color: var(--danger); }
-    .stat-value.info { color: var(--info); }
-
-    /* Table */
-    .table-container { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 24px; }
-    .table-header {
-      padding: 16px 20px; border-bottom: 1px solid var(--border);
-      display: flex; justify-content: space-between; align-items: center;
-    }
-    .table-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; }
-    .table-search {
-      padding: 8px 14px; background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 8px; color: var(--text); font-size: 0.88rem; outline: none;
-      min-width: 200px;
-    }
-    .table-search::placeholder { color: var(--muted); }
-    .table-search:focus { border-color: var(--accent); }
-    .table-wrap { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; }
-    th {
-      padding: 12px 16px; text-align: left; font-size: 0.78rem;
-      color: var(--muted); font-weight: 600; text-transform: uppercase;
-      letter-spacing: 0.5px; background: var(--surface2);
-      border-bottom: 1px solid var(--border);
-    }
-    td { padding: 14px 16px; font-size: 0.88rem; border-bottom: 1px solid var(--border); color: var(--text); }
-    tr:last-child td { border-bottom: none; }
-    tr:hover td { background: var(--surface2); }
-
-    /* Status badges */
-    .status-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;
-    }
-    .status-badge.ativo { background: rgba(63,185,80,0.15); color: var(--success); }
-    .status-badge.aviso { background: rgba(210,153,34,0.15); color: var(--warning); }
-    .status-badge.vencido { background: rgba(248,81,73,0.15); color: var(--danger); }
-    .status-badge.bloqueado { background: rgba(248,81,73,0.25); color: #ff6b6b; }
-    .status-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-
-    /* Buttons */
-    .btn {
-      padding: 8px 14px; border: none; border-radius: 8px;
-      cursor: pointer; font-weight: 600; font-size: 0.82rem;
-      display: inline-flex; align-items: center; gap: 6px;
-      transition: all 0.2s ease;
-    }
-    .btn-sm { padding: 6px 10px; font-size: 0.78rem; }
-    .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; }
-    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
-    .btn-success { background: rgba(63,185,80,0.15); color: var(--success); border: 1px solid rgba(63,185,80,0.3); }
-    .btn-success:hover { background: rgba(63,185,80,0.25); }
-    .btn-danger { background: rgba(248,81,73,0.15); color: var(--danger); border: 1px solid rgba(248,81,73,0.3); }
-    .btn-danger:hover { background: rgba(248,81,73,0.25); }
-    .btn-warning { background: rgba(210,153,34,0.15); color: var(--warning); border: 1px solid rgba(210,153,34,0.3); }
-    .btn-info { background: rgba(88,166,255,0.15); color: var(--info); border: 1px solid rgba(88,166,255,0.3); }
-    .btn-info:hover { background: rgba(88,166,255,0.25); }
-    .btn-block { width: 100%; justify-content: center; }
-
-    /* Actions */
-    .action-btns { display: flex; gap: 6px; }
-
-    /* Config card */
-    .config-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
-    .config-card h2 { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; color: var(--text); }
-    .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; font-size: 0.82rem; font-weight: 500; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .form-input {
-      width: 100%; padding: 12px 16px; background: var(--surface2);
-      border: 1px solid var(--border); border-radius: 8px; color: var(--text);
-      font-size: 0.95rem; outline: none; transition: border-color 0.2s;
-    }
-    .form-input:focus { border-color: var(--accent); }
-    .form-input::placeholder { color: #4a5568; }
-
-    /* Modal */
-    .modal-overlay {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,0.7); z-index: 200;
-      align-items: center; justify-content: center; padding: 20px;
-      backdrop-filter: blur(4px);
-    }
-    .modal-overlay.show { display: flex; }
-    .modal-box {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 16px; padding: 28px; max-width: 440px; width: 100%;
-      animation: fadeIn 0.3s ease;
-    }
-    .modal-box h3 { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 16px; }
-    .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
-    .modal-actions .btn { flex: 1; justify-content: center; padding: 12px; }
-
-    /* Toast */
-    .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
-    .toast {
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 10px; padding: 14px 18px; font-size: 0.88rem;
-      display: flex; align-items: center; gap: 10px; max-width: 320px;
-      animation: toastIn 0.3s ease;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-    }
-    .toast.success { border-color: rgba(63,185,80,0.4); }
-    .toast.error { border-color: rgba(248,81,73,0.4); }
-    .toast i { font-size: 1rem; }
-    .toast.success i { color: var(--success); }
-    .toast.error i { color: var(--danger); }
-    .toast.info i { color: var(--info); }
-    @keyframes toastIn { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
-
-    /* Loading */
-    .loading-row td { text-align: center; color: var(--muted); padding: 40px; }
-
-    /* Empty */
-    .empty-row td { text-align: center; color: var(--muted); padding: 40px; font-size: 0.9rem; }
-
-    /* ── APP NATIVO MOBILE ── */
-    body { padding-top: env(safe-area-inset-top,0px); padding-bottom: env(safe-area-inset-bottom,0px); }
-
-    .bottom-nav {
-      display: none; position: fixed; bottom: 0; left: 0; right: 0;
-      background: var(--surface); border-top: 1px solid var(--border);
-      padding: 8px 0 calc(8px + env(safe-area-inset-bottom,0px));
-      z-index: 200; box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
-    }
-    .bottom-nav-inner { display: flex; justify-content: space-around; align-items: center; }
-    .bottom-nav-btn {
-      flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
-      background: none; border: none; color: var(--muted); cursor: pointer;
-      padding: 6px 4px; transition: color 0.2s; font-size: 0.7rem;
-      font-family: 'DM Sans', sans-serif; font-weight: 500; position: relative;
-    }
-    .bottom-nav-btn i { font-size: 1.3rem; }
-    .bottom-nav-btn.active { color: var(--accent); }
-    .bottom-nav-btn.active::before {
-      content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-      width: 32px; height: 3px; background: var(--accent); border-radius: 0 0 4px 4px;
-    }
-
-    .app-topbar {
-      display: none; position: sticky; top: 0;
-      background: var(--surface); border-bottom: 1px solid var(--border);
-      padding: 14px 16px; z-index: 150; align-items: center;
-      justify-content: space-between; box-shadow: 0 2px 12px rgba(0,0,0,0.3);
-    }
-    .app-topbar-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.05rem; color: var(--text); }
-    .app-topbar-avatar {
+    .topbar-avatar {
       width: 34px; height: 34px; border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      background: var(--black); color: white;
       display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 0.85rem; color: white; cursor: pointer;
+      font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: opacity 0.2s;
+    }
+    .topbar-avatar:active { opacity: 0.7; }
+
+    /* PAGES */
+    .page { display: none; animation: fadeUp 0.25s ease; }
+    .page.active { display: block; }
+
+    /* SCROLL AREA */
+    .scroll-area { padding: 16px 16px 100px; max-width: 600px; margin: 0 auto; }
+
+    /* SECTION LABEL */
+    .section-label {
+      font-size: 0.7rem; font-weight: 700; color: var(--gray3);
+      text-transform: uppercase; letter-spacing: 1px;
+      margin: 24px 0 10px; padding: 0 2px;
     }
 
-    .mobile-profile-card {
-      display: none; background: var(--surface); border: 1px solid var(--border);
-      border-radius: 16px; padding: 20px; margin-bottom: 16px; align-items: center; gap: 14px;
-    }
-    .mobile-profile-card .avatar-lg {
-      width: 52px; height: 52px; border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 1.1rem; color: white; flex-shrink: 0;
-    }
-    .mobile-profile-card .info h3 { font-size: 1rem; font-weight: 700; }
-    .mobile-profile-card .info p { font-size: 0.8rem; color: var(--muted); }
+    /* GREETING */
+    .greeting { margin: 20px 0 24px; }
+    .greeting-sub { font-size: 0.85rem; color: var(--gray3); font-weight: 400; }
+    .greeting-title { font-size: 1.8rem; font-weight: 800; color: var(--black); letter-spacing: -0.5px; margin-top: 2px; }
 
-    @media (max-width: 768px) {
-      .sidebar { display: none !important; }
-      .main { margin-left: 0 !important; padding: 0 0 80px; }
-      .app-topbar { display: flex !important; }
-      .bottom-nav { display: block !important; }
-      .mobile-profile-card { display: flex !important; }
-      .stats-grid { grid-template-columns: repeat(2,1fr); gap: 10px; }
-      .stat-card { padding: 14px; border-radius: 14px; }
-      .stat-value { font-size: 1.6rem; }
-      .table-header { flex-direction: column; gap: 12px; align-items: flex-start; }
-      .table-search { width: 100%; }
-      .page { padding: 14px; }
-      .page-header h1 { font-size: 1.4rem; }
-      .table-container { border-radius: 14px; }
-      .config-card { border-radius: 14px; padding: 18px; }
-      .btn { padding: 10px 16px; }
-      .btn-sm { padding: 9px 12px; font-size: 0.82rem; }
-      td, th { padding: 12px 10px; font-size: 0.82rem; }
-      .action-btns { gap: 4px; flex-wrap: wrap; }
+    /* STATS GRID */
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; }
+    .stat-card {
+      background: var(--white); border-radius: var(--radius);
+      padding: 18px 16px; transition: transform 0.15s; cursor: default;
     }
-    .mobile-header { display: none; }
-    .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; }
-    .sidebar-overlay.show { display: block; }
+    .stat-card:active { transform: scale(0.97); }
+    .stat-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; margin-bottom: 12px;
+    }
+    .stat-icon.blue  { background: rgba(0,122,255,0.1);  color: var(--blue); }
+    .stat-icon.green { background: rgba(52,199,89,0.1);   color: var(--green); }
+    .stat-icon.orange{ background: rgba(255,149,0,0.1);   color: var(--orange); }
+    .stat-icon.red   { background: rgba(255,59,48,0.1);   color: var(--red); }
+    .stat-value { font-size: 2rem; font-weight: 800; color: var(--black); letter-spacing: -1px; line-height: 1; }
+    .stat-label { font-size: 0.75rem; color: var(--gray3); font-weight: 500; margin-top: 4px; }
+
+    /* CARD LIST */
+    .card-list { background: var(--white); border-radius: var(--radius); overflow: hidden; }
+    .card-list-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 16px; border-bottom: 1px solid var(--gray6);
+      cursor: pointer; transition: background 0.15s;
+    }
+    .card-list-item:last-child { border-bottom: none; }
+    .card-list-item:active { background: var(--gray7); }
+    .list-avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--black); color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.88rem; flex-shrink: 0;
+    }
+    .list-info { flex: 1; min-width: 0; }
+    .list-name { font-weight: 600; font-size: 0.9rem; color: var(--black); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .list-email { font-size: 0.75rem; color: var(--gray3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+    .list-chevron { color: var(--gray4); font-size: 0.75rem; flex-shrink: 0; }
+
+    /* SEARCH BAR */
+    .search-bar {
+      background: var(--white); border-radius: var(--radius-sm);
+      padding: 12px 14px; display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+    }
+    .search-bar input {
+      border: none; background: transparent; outline: none;
+      font-family: 'Inter', sans-serif; font-size: 0.9rem; color: var(--black); width: 100%;
+    }
+    .search-bar input::placeholder { color: var(--gray4); }
+    .search-bar i { color: var(--gray4); font-size: 0.85rem; }
+
+    /* USERS GRID */
+    .users-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .user-card {
+      background: var(--white); border-radius: var(--radius);
+      padding: 18px 14px; cursor: pointer; transition: transform 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .user-card:active { transform: scale(0.96); }
+    .user-card-avatar {
+      width: 48px; height: 48px; border-radius: 14px;
+      background: var(--black); color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 1.1rem; margin-bottom: 12px;
+    }
+    .user-card-name {
+      font-weight: 700; font-size: 0.88rem; color: var(--black);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -0.2px;
+    }
+    .user-card-date { font-size: 0.72rem; color: var(--gray3); margin-top: 3px; }
+    .user-card-status {
+      display: inline-flex; align-items: center; gap: 5px;
+      margin-top: 10px; font-size: 0.7rem; font-weight: 600;
+      padding: 3px 8px; border-radius: 20px;
+    }
+    .user-card-status::before { content:''; width:5px; height:5px; border-radius:50%; background:currentColor; }
+    .status-ativo     { background: rgba(52,199,89,0.12);  color: #1a7a35; }
+    .status-aviso     { background: rgba(255,149,0,0.12);  color: #a05800; }
+    .status-vencido   { background: rgba(255,59,48,0.12);  color: #cc2a22; }
+    .status-bloqueado { background: rgba(255,59,48,0.18);  color: #cc2a22; }
+
+    .users-empty  { grid-column:1/-1; text-align:center; padding:48px 0; color:var(--gray3); font-size:0.9rem; }
+    .users-loading{ grid-column:1/-1; text-align:center; padding:48px 0; color:var(--gray3); display:flex; align-items:center; justify-content:center; gap:10px; }
+
+    /* BOTTOM SHEET */
+    .sheet-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.35); z-index: 300; backdrop-filter: blur(2px);
+    }
+    .sheet-overlay.show { display: block; }
+    .sheet {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--white); border-radius: 24px 24px 0 0;
+      z-index: 301; max-height: 88vh; overflow-y: auto;
+      transform: translateY(100%);
+      transition: transform 0.35s cubic-bezier(0.32,0.72,0,1);
+      padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    }
+    .sheet.show { transform: translateY(0); }
+    .sheet-handle { width: 36px; height: 4px; background: var(--gray5); border-radius: 2px; margin: 12px auto 0; }
+    .sheet-header { display: flex; align-items: center; gap: 14px; padding: 20px 20px 0; }
+    .sheet-avatar {
+      width: 56px; height: 56px; border-radius: 16px;
+      background: var(--black); color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 1.3rem; flex-shrink: 0;
+    }
+    .sheet-name { font-size: 1.15rem; font-weight: 800; color: var(--black); letter-spacing: -0.4px; }
+    .sheet-email { font-size: 0.8rem; color: var(--gray3); margin-top: 3px; }
+    .sheet-body { padding: 20px; }
+
+    /* Info rows */
+    .info-group { background: var(--gray7); border-radius: var(--radius); overflow: hidden; margin-bottom: 12px; }
+    .info-row { display: flex; justify-content: space-between; align-items: center; padding: 13px 16px; border-bottom: 1px solid var(--gray6); }
+    .info-row:last-child { border-bottom: none; }
+    .info-row-label { font-size: 0.82rem; color: var(--gray3); font-weight: 500; }
+    .info-row-value { font-size: 0.85rem; font-weight: 600; color: var(--black); text-align: right; }
+
+    /* Sheet action buttons */
+    .sheet-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .sheet-btn {
+      padding: 14px 10px; border: none; border-radius: var(--radius);
+      font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.82rem;
+      cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px;
+      transition: opacity 0.15s, transform 0.15s; -webkit-tap-highlight-color: transparent;
+    }
+    .sheet-btn:active { opacity: 0.75; transform: scale(0.97); }
+    .sheet-btn i { font-size: 1.1rem; }
+    .sheet-btn.edit    { background: rgba(0,122,255,0.09);  color: var(--blue); }
+    .sheet-btn.renew   { background: rgba(52,199,89,0.09);  color: #1a7a35; }
+    .sheet-btn.block   { background: rgba(255,149,0,0.09);  color: #a05800; }
+    .sheet-btn.unblock { background: rgba(52,199,89,0.09);  color: #1a7a35; }
+    .sheet-btn.delete  { background: rgba(255,59,48,0.09);  color: var(--red); }
+    .sheet-btn.close-btn { background: var(--gray7); color: var(--gray2); grid-column: 1/-1; }
+
+    /* Inline edit */
+    .edit-panel, .renew-panel {
+      background: var(--gray7); border-radius: var(--radius);
+      padding: 16px; margin-bottom: 12px; display: none;
+    }
+    .edit-panel.show, .renew-panel.show { display: block; }
+    .edit-panel label, .renew-panel label {
+      font-size: 0.72rem; font-weight: 700; color: var(--gray3);
+      text-transform: uppercase; letter-spacing: 0.6px;
+      display: block; margin-bottom: 6px; margin-top: 12px;
+    }
+    .edit-panel label:first-child, .renew-panel label:first-child { margin-top: 0; }
+    .edit-panel select, .edit-panel input,
+    .renew-panel select {
+      width: 100%; padding: 11px 14px;
+      background: var(--white); border: 1.5px solid var(--gray6);
+      border-radius: var(--radius-sm); font-family: 'Inter', sans-serif;
+      font-size: 0.88rem; color: var(--black); outline: none; transition: border-color 0.2s;
+    }
+    .edit-panel select:focus, .edit-panel input:focus, .renew-panel select:focus { border-color: var(--black); }
+    .edit-save, .renew-confirm {
+      width: 100%; margin-top: 14px; padding: 14px;
+      border: none; border-radius: var(--radius-sm); font-family: 'Inter', sans-serif;
+      font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: opacity 0.2s;
+    }
+    .edit-save   { background: var(--black); color: white; }
+    .renew-confirm { background: #1a7a35; color: white; }
+    .edit-save:active, .renew-confirm:active { opacity: 0.8; }
+
+    /* CONFIG */
+    .config-section { background: var(--white); border-radius: var(--radius); overflow: hidden; margin-bottom: 12px; }
+    .config-section-title { padding: 14px 16px 0; font-size: 0.7rem; font-weight: 700; color: var(--gray3); text-transform: uppercase; letter-spacing: 0.8px; }
+    .config-row { padding: 0 16px 16px; border-bottom: 1px solid var(--gray6); }
+    .config-row:last-child { border-bottom: none; }
+    .config-row label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--gray2); margin-bottom: 8px; margin-top: 14px; }
+    .config-input {
+      width: 100%; padding: 12px 14px;
+      background: var(--gray7); border: 1.5px solid var(--gray6);
+      border-radius: var(--radius-sm); font-family: 'Inter', sans-serif;
+      font-size: 0.9rem; color: var(--black); outline: none; transition: border-color 0.2s;
+    }
+    .config-input:focus { border-color: var(--black); background: var(--white); }
+    .config-btn {
+      width: 100%; padding: 15px; border: none; border-radius: var(--radius);
+      font-family: 'Inter', sans-serif; font-weight: 700; font-size: 0.9rem;
+      cursor: pointer; transition: opacity 0.2s; margin-top: 4px;
+    }
+    .config-btn:active { opacity: 0.75; }
+    .config-btn.primary { background: var(--black); color: white; }
+    .config-btn.danger  { background: rgba(255,59,48,0.09);  color: var(--red); }
+    .config-btn.warning { background: rgba(255,149,0,0.09);  color: #a05800; }
+
+    /* BOTTOM NAV */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      border-top: 1px solid var(--gray6);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      display: flex;
+    }
+    .nav-btn {
+      flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+      padding: 10px 4px 12px; background: none; border: none;
+      color: var(--gray4); cursor: pointer; font-size: 0.65rem;
+      font-family: 'Inter', sans-serif; font-weight: 600;
+      transition: color 0.2s; -webkit-tap-highlight-color: transparent; position: relative;
+    }
+    .nav-btn i { font-size: 1.25rem; }
+    .nav-btn.active { color: var(--black); }
+    .nav-dot {
+      position: absolute; top: 8px; right: calc(50% - 14px);
+      width: 6px; height: 6px; background: var(--red); border-radius: 50%;
+      border: 1.5px solid white; display: none;
+    }
+    .nav-dot.show { display: block; }
+
+    /* TOAST */
+    .toast-container { position: fixed; top: 64px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
+    .toast {
+      background: var(--gray1); color: white; border-radius: 20px; padding: 10px 18px;
+      font-size: 0.82rem; font-weight: 600; display: flex; align-items: center; gap: 8px;
+      animation: toastIn 0.3s ease, toastOut 0.3s ease 2.2s forwards;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15); white-space: nowrap;
+    }
+    .toast.success { background: #1a7a35; }
+    .toast.error   { background: var(--red); }
+    .toast.info    { background: var(--blue); }
+    @keyframes toastIn  { from { opacity:0; transform:translateY(-8px) scale(0.9); } to { opacity:1; transform:none; } }
+    @keyframes toastOut { to   { opacity:0; transform:translateY(-8px) scale(0.9); } }
+
+    /* MISC */
+    .see-all-btn {
+      width: 100%; padding: 14px; background: var(--white); border: none;
+      border-radius: var(--radius); color: var(--blue);
+      font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.88rem;
+      cursor: pointer; margin-top: 10px; transition: opacity 0.2s;
+    }
+    .see-all-btn:active { opacity: 0.7; }
   </style>
 </head>
 <body>
 
+<!-- Auth overlay -->
 <div id="authOverlay">
+  <div class="auth-logo">📅</div>
   <div class="auth-spinner"></div>
-  <p style="color:var(--muted)">Verificando acesso...</p>
+  <div class="auth-text">Verificando acesso...</div>
 </div>
 
+<!-- Toasts -->
 <div class="toast-container" id="toastContainer"></div>
 
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-
-<!-- Top bar (mobile app nativo) -->
-<div class="app-topbar" id="appTopbar">
-  <div class="app-topbar-title">📅 AgendaFácil</div>
-  <div class="app-topbar-avatar" id="topbarAvatar" onclick="logout()">A</div>
+<!-- Top bar -->
+<div class="topbar" id="topbar" style="display:none">
+  <div class="topbar-brand">📅 AgendaFácil <span class="topbar-badge">ADMIN</span></div>
+  <div class="topbar-avatar" id="topbarAvatar">A</div>
 </div>
 
-<div class="layout">
-  <!-- Sidebar -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-brand">
-      📅 AgendaFácil
-      <span class="badge">ADMIN</span>
+<!-- Pages -->
+<div id="appContent" style="display:none">
+
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <div class="scroll-area">
+      <div class="greeting">
+        <div class="greeting-sub">Bem-vindo,</div>
+        <div class="greeting-title" id="greetName">Admin</div>
+      </div>
+
+      <div class="section-label">Visão Geral</div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon blue"><i class="fas fa-users"></i></div>
+          <div class="stat-value" id="statTotal">—</div>
+          <div class="stat-label">Total</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+          <div class="stat-value" id="statAtivo">—</div>
+          <div class="stat-label">Ativos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon orange"><i class="fas fa-exclamation-triangle"></i></div>
+          <div class="stat-value" id="statAviso">—</div>
+          <div class="stat-label">Em Aviso</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon red"><i class="fas fa-ban"></i></div>
+          <div class="stat-value" id="statBloqueado">—</div>
+          <div class="stat-label">Bloqueados</div>
+        </div>
+      </div>
+
+      <div class="section-label">Cadastros Recentes</div>
+      <div class="card-list" id="recentList">
+        <div class="users-loading"><div class="auth-spinner" style="width:20px;height:20px;border-width:2px"></div> Carregando...</div>
+      </div>
+      <button class="see-all-btn" onclick="navegarPara('usuarios')">Ver todos os usuários →</button>
     </div>
-    <nav class="sidebar-nav">
-      <button class="nav-item active" data-page="dashboard" onclick="navegarPara('dashboard')">
-        <i class="fas fa-chart-pie"></i> Dashboard
-      </button>
-      <button class="nav-item" data-page="usuarios" onclick="navegarPara('usuarios')">
-        <i class="fas fa-users"></i> Usuários
-      </button>
-      <button class="nav-item" data-page="configuracoes" onclick="navegarPara('configuracoes')">
-        <i class="fas fa-cog"></i> Configurações
-      </button>
-    </nav>
-    <div class="sidebar-footer">
-      <div class="user-info">
-        <div class="user-avatar" id="userAvatar">A</div>
-        <div>
-          <div class="user-name" id="userName">Admin</div>
-          <div class="user-role">Super Administrador</div>
-        </div>
-      </div>
-      <button class="btn-logout" onclick="logout()">
-        <i class="fas fa-sign-out-alt"></i> Sair
-      </button>
-    </div>
-  </aside>
-
-  <!-- Main Content -->
-  <main class="main" id="mainApp" style="display:none">
-
-    <!-- DASHBOARD -->
-    <div class="page active" id="page-dashboard">
-      <div class="page-header">
-        <h1><i class="fas fa-chart-pie" style="color:var(--accent)"></i> Dashboard</h1>
-        <p>Visão geral do sistema</p>
-      </div>
-
-      <!-- Card de perfil (só mobile) -->
-      <div class="mobile-profile-card">
-        <div class="avatar-lg" id="mobileAvatar">A</div>
-        <div class="info">
-          <h3 id="mobileUserName">Admin</h3>
-          <p>Super Administrador</p>
-        </div>
-        <button class="btn btn-danger btn-sm" style="margin-left:auto" onclick="logout()">
-          <i class="fas fa-sign-out-alt"></i>
-        </button>
-      </div>
-
-      <div class="stats-grid" id="statsGrid">
-        <div class="stat-card info"><div class="stat-label">Total de Contas</div><div class="stat-value info" id="statTotal">—</div></div>
-        <div class="stat-card success"><div class="stat-label">Contas Ativas</div><div class="stat-value success" id="statAtivo">—</div></div>
-        <div class="stat-card warning"><div class="stat-label">Em Aviso</div><div class="stat-value warning" id="statAviso">—</div></div>
-        <div class="stat-card danger"><div class="stat-label">Bloqueadas/Vencidas</div><div class="stat-value danger" id="statBloqueado">—</div></div>
-      </div>
-
-      <!-- Recent users table -->
-      <div class="table-container">
-        <div class="table-header">
-          <div class="table-title"><i class="fas fa-clock"></i> Contas Recentes</div>
-          <button class="btn btn-primary" onclick="navegarPara('usuarios')"><i class="fas fa-arrow-right"></i> Ver Todos</button>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Nome</th><th>Email</th><th>Status</th><th>Vencimento</th></tr></thead>
-            <tbody id="recentUsersTable">
-              <tr class="loading-row"><td colspan="4"><i class="fas fa-spinner fa-spin"></i> Carregando...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- USUÁRIOS -->
-    <div class="page" id="page-usuarios">
-      <div class="page-header">
-        <h1><i class="fas fa-users" style="color:var(--info)"></i> Usuários</h1>
-        <p>Gerencie todas as contas do sistema</p>
-      </div>
-
-      <div class="table-container">
-        <div class="table-header">
-          <div class="table-title"><i class="fas fa-list"></i> Todos os Usuários</div>
-          <input type="text" class="table-search" id="searchInput" placeholder="🔍 Buscar por nome ou email..." oninput="filtrarUsuarios(this.value)">
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Nome</th>
-                <th>Email</th>
-                <th>Cadastro</th>
-                <th>Vencimento</th>
-                <th>Status</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody id="usersTable">
-              <tr class="loading-row"><td colspan="6"><i class="fas fa-spinner fa-spin"></i> Carregando...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- CONFIGURAÇÕES -->
-    <div class="page" id="page-configuracoes">
-      <div class="page-header">
-        <h1><i class="fas fa-cog" style="color:var(--accent2)"></i> Configurações</h1>
-        <p>Parâmetros globais do sistema</p>
-      </div>
-
-      <div class="config-card">
-        <h2><i class="fas fa-money-bill-wave" style="color:var(--success)"></i> Mensalidade</h2>
-        <div class="form-group">
-          <label>Valor da Mensalidade (R$)</label>
-          <input type="number" id="valorMensalidade" class="form-input" placeholder="29.90" step="0.01" min="0">
-        </div>
-        <div class="form-group">
-          <label>Dias de Aviso Antes do Vencimento</label>
-          <input type="number" id="diasAviso" class="form-input" placeholder="5" min="1" max="30">
-        </div>
-        <div class="form-group">
-          <label>Email do Super Administrador</label>
-          <input type="email" id="adminEmail" class="form-input" placeholder="admin@exemplo.com">
-        </div>
-        <button class="btn btn-primary" onclick="salvarConfiguracoes()" style="margin-top:8px;">
-          <i class="fas fa-save"></i> Salvar Configurações
-        </button>
-      </div>
-
-      <div class="config-card">
-        <h2><i class="fas fa-calendar-alt" style="color:var(--info)"></i> Ações em Massa</h2>
-        <p style="color:var(--muted);font-size:0.88rem;margin-bottom:16px;">Operações que afetam múltiplos usuários.</p>
-        <div style="display:flex;gap:12px;flex-wrap:wrap;">
-          <button class="btn btn-warning" onclick="renovarTodasContas()">
-            <i class="fas fa-sync-alt"></i> Renovar Contas Vencidas (+30 dias)
-          </button>
-          <button class="btn btn-danger" onclick="bloquearContasVencidas()">
-            <i class="fas fa-ban"></i> Bloquear Contas Vencidas
-          </button>
-        </div>
-      </div>
-    </div>
-
-  </main>
-</div>
-
-<!-- Bottom Navigation (app nativo mobile) -->
-<nav class="bottom-nav" id="bottomNav">
-  <div class="bottom-nav-inner">
-    <button class="bottom-nav-btn active" data-page="dashboard" onclick="navegarPara('dashboard')">
-      <i class="fas fa-chart-pie"></i>
-      <span>Painel</span>
-    </button>
-    <button class="bottom-nav-btn" data-page="usuarios" onclick="navegarPara('usuarios')">
-      <i class="fas fa-users"></i>
-      <span>Usuários</span>
-    </button>
-    <button class="bottom-nav-btn" data-page="configuracoes" onclick="navegarPara('configuracoes')">
-      <i class="fas fa-cog"></i>
-      <span>Config</span>
-    </button>
   </div>
+
+  <!-- USUÁRIOS -->
+  <div class="page" id="page-usuarios">
+    <div class="scroll-area">
+      <div class="greeting">
+        <div class="greeting-title">Usuários</div>
+      </div>
+      <div class="search-bar">
+        <i class="fas fa-magnifying-glass"></i>
+        <input type="text" id="searchInput" placeholder="Buscar por nome ou email…" oninput="filtrarUsuarios(this.value)" />
+      </div>
+      <div class="users-grid" id="usersGrid">
+        <div class="users-loading"><div class="auth-spinner" style="width:20px;height:20px;border-width:2px"></div> Carregando...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIGURAÇÕES -->
+  <div class="page" id="page-configuracoes">
+    <div class="scroll-area">
+      <div class="greeting">
+        <div class="greeting-title">Configurações</div>
+      </div>
+
+      <div class="section-label">Sistema</div>
+      <div class="config-section">
+        <div class="config-section-title">FINANCEIRO</div>
+        <div class="config-row">
+          <label>Valor da Mensalidade (R$)</label>
+          <input type="number" id="valorMensalidade" class="config-input" placeholder="29.90" step="0.01" min="0" />
+        </div>
+        <div class="config-row">
+          <label>Dias de Aviso Antes do Vencimento</label>
+          <input type="number" id="diasAviso" class="config-input" placeholder="5" min="1" max="30" />
+        </div>
+        <div class="config-row">
+          <label>Email do Super Administrador</label>
+          <input type="email" id="adminEmail" class="config-input" placeholder="admin@exemplo.com" />
+        </div>
+      </div>
+      <button class="config-btn primary" onclick="salvarConfiguracoes()">Salvar Configurações</button>
+
+      <div class="section-label" style="margin-top:28px">Ações em Massa</div>
+      <button class="config-btn warning" onclick="renovarTodasContas()" style="margin-bottom:10px">
+        <i class="fas fa-rotate"></i> Renovar Contas Vencidas (+30 dias)
+      </button>
+      <button class="config-btn danger" onclick="bloquearContasVencidas()">
+        <i class="fas fa-ban"></i> Bloquear Contas Vencidas
+      </button>
+
+      <div class="section-label" style="margin-top:28px">Sessão</div>
+      <button class="config-btn danger" onclick="logout()">
+        <i class="fas fa-sign-out-alt"></i> Sair do Painel
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Bottom Nav -->
+<nav class="bottom-nav" id="bottomNav" style="display:none">
+  <button class="nav-btn active" data-page="dashboard" onclick="navegarPara('dashboard')">
+    <i class="fas fa-house"></i><span>Início</span>
+  </button>
+  <button class="nav-btn" data-page="usuarios" onclick="navegarPara('usuarios')">
+    <i class="fas fa-users"></i><span>Usuários</span>
+    <span class="nav-dot" id="alertDot"></span>
+  </button>
+  <button class="nav-btn" data-page="configuracoes" onclick="navegarPara('configuracoes')">
+    <i class="fas fa-gear"></i><span>Config</span>
+  </button>
 </nav>
 
-<!-- Modal: editar usuário -->
-<div class="modal-overlay" id="modalUsuario">
-  <div class="modal-box">
-    <h3 id="modalUsuarioTitle">Editar Usuário</h3>
-    <input type="hidden" id="editUserId">
-    <div class="form-group">
+<!-- User detail bottom sheet -->
+<div class="sheet-overlay" id="sheetOverlay" onclick="fecharSheet()"></div>
+<div class="sheet" id="userSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-header">
+    <div class="sheet-avatar" id="sheetAvatar">A</div>
+    <div>
+      <div class="sheet-name" id="sheetName">—</div>
+      <div class="sheet-email" id="sheetEmail">—</div>
+    </div>
+  </div>
+  <div class="sheet-body">
+    <div class="info-group">
+      <div class="info-row">
+        <span class="info-row-label">Status</span>
+        <span class="info-row-value" id="sheetStatus">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-row-label">Cadastro</span>
+        <span class="info-row-value" id="sheetCadastro">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-row-label">Vencimento</span>
+        <span class="info-row-value" id="sheetVencimento">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-row-label">Função</span>
+        <span class="info-row-value" id="sheetRole">—</span>
+      </div>
+    </div>
+
+    <!-- Inline edit panel -->
+    <div class="edit-panel" id="editPanel">
+      <input type="hidden" id="editUserId" />
       <label>Plano / Status</label>
-      <select id="editPlano" class="form-input">
+      <select id="editPlano">
         <option value="ativo">Ativo</option>
         <option value="aviso">Em Aviso</option>
         <option value="vencido">Vencido</option>
         <option value="bloqueado">Bloqueado</option>
       </select>
-    </div>
-    <div class="form-group">
       <label>Data de Vencimento</label>
-      <input type="date" id="editVencimento" class="form-input">
-    </div>
-    <div class="form-group">
+      <input type="date" id="editVencimento" />
       <label>Função</label>
-      <select id="editRole" class="form-input">
+      <select id="editRole">
         <option value="servidor">Servidor</option>
         <option value="admin">Administrador</option>
       </select>
+      <button class="edit-save" onclick="salvarUsuario()">Salvar Alterações</button>
     </div>
-    <div class="modal-actions">
-      <button class="btn btn-primary" onclick="salvarUsuario()"><i class="fas fa-save"></i> Salvar</button>
-      <button class="btn btn-danger" onclick="fecharModal()"><i class="fas fa-times"></i> Cancelar</button>
-    </div>
-  </div>
-</div>
 
-<!-- Modal: renovar usuário -->
-<div class="modal-overlay" id="modalRenovar">
-  <div class="modal-box">
-    <h3>Renovar Assinatura</h3>
-    <input type="hidden" id="renovarUserId">
-    <p style="color:var(--muted);font-size:0.9rem;margin-bottom:16px;">Selecione por quantos dias renovar a conta:</p>
-    <div class="form-group">
+    <!-- Inline renew panel -->
+    <div class="renew-panel" id="renewPanel">
       <label>Dias de renovação</label>
-      <select id="renovarDias" class="form-input">
+      <select id="renovarDias">
         <option value="30">30 dias (1 mês)</option>
         <option value="60">60 dias (2 meses)</option>
         <option value="90">90 dias (3 meses)</option>
         <option value="180">180 dias (6 meses)</option>
         <option value="365">365 dias (1 ano)</option>
       </select>
+      <button class="renew-confirm" onclick="confirmarRenovar()">Confirmar Renovação</button>
     </div>
-    <div class="modal-actions">
-      <button class="btn btn-success" onclick="confirmarRenovar()"><i class="fas fa-check"></i> Renovar</button>
-      <button class="btn btn-danger" onclick="fecharModalRenovar()"><i class="fas fa-times"></i> Cancelar</button>
+
+    <!-- Actions grid -->
+    <div class="sheet-actions">
+      <button class="sheet-btn edit"   onclick="toggleEditPanel()"><i class="fas fa-pen"></i>Editar</button>
+      <button class="sheet-btn renew"  onclick="toggleRenewPanel()"><i class="fas fa-calendar-plus"></i>Renovar</button>
+      <button class="sheet-btn block"  id="blockBtn" onclick="blockAction()"><i class="fas fa-ban"></i>Bloquear</button>
+      <button class="sheet-btn delete" onclick="excluirUsuario()"><i class="fas fa-trash"></i>Excluir</button>
     </div>
+    <button class="sheet-btn close-btn" onclick="fecharSheet()">Fechar</button>
   </div>
 </div>
 
@@ -583,357 +568,316 @@
 
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
-  const db = firebase.firestore();
+  const db   = firebase.firestore();
 
-  let allUsers = [];
-  let filteredUsers = [];
-  let sysConfig = { valorMensalidade: 29.90, diasAviso: 5, adminEmail: '' };
+  let allUsers        = [];
+  let filteredUsers   = [];
+  let currentSheetUid = null;
+  let sysConfig       = { valorMensalidade: 29.90, diasAviso: 5, adminEmail: '' };
 
-  // ── AUTH ─────────────────────────────────────────────
+  // ── AUTH ──────────────────────────────────────────────
   auth.onAuthStateChanged(async user => {
     if (!user) { window.location.href = 'index.html'; return; }
-
     try {
       const userDoc = await db.collection('usuarios').doc(user.uid).get();
       if (!userDoc.exists || userDoc.data().role !== 'admin') {
-        // Check if admin by email (first setup)
         const cfg = await db.collection('configuracoes').doc('sistema').get();
         const adminEmail = cfg.exists ? cfg.data().adminEmail : null;
-
-        if (!adminEmail || user.email !== adminEmail) {
-          window.location.href = 'painel.html';
-          return;
-        }
-
-        // Promote to admin if not set
+        if (!adminEmail || user.email !== adminEmail) { window.location.href = 'painel.html'; return; }
         await db.collection('usuarios').doc(user.uid).set({
-          uid: user.uid, email: user.email,
-          nome: user.displayName || user.email,
+          uid: user.uid, email: user.email, nome: user.displayName || user.email,
           role: 'admin', plano: 'ativo',
           dataCadastro: firebase.firestore.FieldValue.serverTimestamp(),
           dataVencimento: new Date('2099-12-31')
         }, { merge: true });
       }
-
-      // Setup UI
-      const nome = user.displayName || user.email;
+      const nome   = user.displayName || user.email;
       const inicial = nome.charAt(0).toUpperCase();
-      document.getElementById('userName').textContent = nome;
-      document.getElementById('userAvatar').textContent = inicial;
-      // Mobile elements
-      if (document.getElementById('topbarAvatar')) document.getElementById('topbarAvatar').textContent = inicial;
-      if (document.getElementById('mobileAvatar')) document.getElementById('mobileAvatar').textContent = inicial;
-      if (document.getElementById('mobileUserName')) document.getElementById('mobileUserName').textContent = nome;
+      document.getElementById('topbarAvatar').textContent = inicial;
+      document.getElementById('greetName').textContent    = nome.split(' ')[0];
       document.getElementById('authOverlay').style.display = 'none';
-      document.getElementById('mainApp').style.display = 'block';
-
+      document.getElementById('topbar').style.display      = 'flex';
+      document.getElementById('appContent').style.display  = 'block';
+      document.getElementById('bottomNav').style.display   = 'flex';
       await carregarConfiguracoesSistema();
       await carregarDashboard();
-    } catch(e) {
-      console.error(e);
-      window.location.href = 'index.html';
-    }
+    } catch(e) { console.error(e); window.location.href = 'index.html'; }
   });
 
-  function logout() { auth.signOut().then(() => window.location.href = 'index.html'); }
+  function logout() {
+    if (!confirm('Sair do painel?')) return;
+    auth.signOut().then(() => window.location.href = 'index.html');
+  }
 
   // ── NAVIGATION ────────────────────────────────────────
   function navegarPara(page) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    document.querySelectorAll('.bottom-nav-btn').forEach(n => n.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
     document.getElementById(`page-${page}`).classList.add('active');
     document.querySelectorAll(`[data-page="${page}"]`).forEach(el => el.classList.add('active'));
-    if (page === 'dashboard') carregarDashboard();
-    if (page === 'usuarios') carregarUsuarios();
-    if (page === 'configuracoes') renderConfiguracoes();
-    closeSidebar();
+    if (page === 'usuarios')     carregarUsuarios();
+    if (page === 'dashboard')    carregarDashboard();
+    if (page === 'configuracoes') carregarConfiguracoesSistema();
+    window.scrollTo(0, 0);
   }
 
-  function toggleSidebar() {
-    document.getElementById('sidebar').classList.toggle('open');
-    document.getElementById('sidebarOverlay').classList.toggle('show');
-  }
-  function closeSidebar() {
-    document.getElementById('sidebar').classList.remove('open');
-    document.getElementById('sidebarOverlay').classList.remove('show');
-  }
-
-  // ── TOAST ─────────────────────────────────────────────
-  function toast(msg, type = 'success') {
-    const c = document.getElementById('toastContainer');
-    const div = document.createElement('div');
-    const icons = { success: 'check-circle', error: 'times-circle', info: 'info-circle' };
-    div.className = `toast ${type}`;
-    div.innerHTML = `<i class="fas fa-${icons[type]||'info-circle'}"></i> ${msg}`;
-    c.appendChild(div);
-    setTimeout(() => div.remove(), 3500);
+  // ── HELPERS ───────────────────────────────────────────
+  function formatDate(ts) {
+    if (!ts) return '—';
+    const d = ts?.toDate ? ts.toDate() : new Date(ts);
+    if (isNaN(d)) return '—';
+    return d.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' });
   }
 
-  // ── UTILS ─────────────────────────────────────────────
-  function formatDate(val) {
-    if (!val) return '—';
-    const d = val?.toDate ? val.toDate() : new Date(val);
-    return d.toLocaleDateString('pt-BR');
-  }
-
-  function calcStatus(userData) {
-    if (userData.plano === 'bloqueado') return 'bloqueado';
-    if (userData.plano === 'admin') return 'ativo';
+  function calcStatus(u) {
+    if (u.plano === 'bloqueado') return 'bloqueado';
     const agora = new Date();
-    let v = userData.dataVencimento?.toDate ? userData.dataVencimento.toDate() : new Date(userData.dataVencimento || '2099-01-01');
+    const v = u.dataVencimento?.toDate ? u.dataVencimento.toDate() : new Date(u.dataVencimento || 0);
     if (agora > v) return 'vencido';
-    const diffDays = Math.ceil((v-agora)/86400000);
-    if (diffDays <= sysConfig.diasAviso) return 'aviso';
-    return userData.plano || 'ativo';
+    const diff = (v - agora) / 86400000;
+    if (diff <= (sysConfig.diasAviso || 5)) return 'aviso';
+    return 'ativo';
   }
 
-  function statusBadge(status) {
-    const labels = { ativo: 'Ativo', aviso: 'Em Aviso', vencido: 'Vencido', bloqueado: 'Bloqueado' };
-    return `<span class="status-badge ${status}">${labels[status]||status}</span>`;
+  function statusLabel(s) {
+    return { ativo:'Ativo', aviso:'Em Aviso', vencido:'Vencido', bloqueado:'Bloqueado' }[s] || s;
   }
 
-  // ── SYSTEM CONFIG ─────────────────────────────────────
-  async function carregarConfiguracoesSistema() {
-    try {
-      const doc = await db.collection('configuracoes').doc('sistema').get();
-      if (doc.exists) { sysConfig = { ...sysConfig, ...doc.data() }; }
-      else {
-        // Create defaults
-        await db.collection('configuracoes').doc('sistema').set({
-          valorMensalidade: 29.90, diasAviso: 5, adminEmail: auth.currentUser?.email || ''
-        });
-      }
-    } catch(e) { console.error(e); }
+  function avatarBg(name) {
+    const palette = ['#1c1c1e','#2c2c2e','#3a3a3c','#48484a','#636366'];
+    let h = 0; for (let i = 0; i < (name||'A').length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
+    return palette[Math.abs(h) % palette.length];
   }
 
-  function renderConfiguracoes() {
-    document.getElementById('valorMensalidade').value = sysConfig.valorMensalidade || 29.90;
-    document.getElementById('diasAviso').value = sysConfig.diasAviso || 5;
-    document.getElementById('adminEmail').value = sysConfig.adminEmail || auth.currentUser?.email || '';
-  }
-
-  async function salvarConfiguracoes() {
-    const valor = parseFloat(document.getElementById('valorMensalidade').value);
-    const dias = parseInt(document.getElementById('diasAviso').value);
-    const email = document.getElementById('adminEmail').value.trim();
-    if (isNaN(valor) || valor < 0) { toast('Valor inválido', 'error'); return; }
-    if (isNaN(dias) || dias < 1) { toast('Dias inválido', 'error'); return; }
-    try {
-      await db.collection('configuracoes').doc('sistema').set({ valorMensalidade: valor, diasAviso: dias, adminEmail: email });
-      sysConfig = { valorMensalidade: valor, diasAviso: dias, adminEmail: email };
-      toast('Configurações salvas!', 'success');
-    } catch(e) { toast('Erro ao salvar', 'error'); }
+  function toast(msg, type = 'info') {
+    const icons = { success:'fa-check', error:'fa-xmark', info:'fa-circle-info' };
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.innerHTML = `<i class="fas ${icons[type]||'fa-circle-info'}"></i> ${msg}`;
+    document.getElementById('toastContainer').appendChild(el);
+    setTimeout(() => el.remove(), 2600);
   }
 
   // ── DASHBOARD ─────────────────────────────────────────
   async function carregarDashboard() {
     try {
-      const snap = await db.collection('usuarios').where('role', '!=', 'admin').get();
-      allUsers = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+      const snap = await db.collection('usuarios').where('role','!=','admin').get();
+      const users = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+      let total=0, ativo=0, aviso=0, bloq=0;
+      users.forEach(u => { total++; const s=calcStatus(u); if(s==='ativo')ativo++; else if(s==='aviso')aviso++; else bloq++; });
+      document.getElementById('statTotal').textContent    = total;
+      document.getElementById('statAtivo').textContent    = ativo;
+      document.getElementById('statAviso').textContent    = aviso;
+      document.getElementById('statBloqueado').textContent = bloq;
+      if (bloq > 0 || aviso > 0) document.getElementById('alertDot').classList.add('show');
 
-      let total = 0, ativo = 0, aviso = 0, bloqueado = 0;
-      allUsers.forEach(u => {
-        total++;
-        const st = calcStatus(u);
-        if (st === 'ativo') ativo++;
-        else if (st === 'aviso') aviso++;
-        else bloqueado++;
-      });
-
-      document.getElementById('statTotal').textContent = total;
-      document.getElementById('statAtivo').textContent = ativo;
-      document.getElementById('statAviso').textContent = aviso;
-      document.getElementById('statBloqueado').textContent = bloqueado;
-
-      // Recent 5
-      const recent = [...allUsers].sort((a,b) => {
-        const da = a.dataCadastro?.toDate?.() || new Date(0);
-        const db2 = b.dataCadastro?.toDate?.() || new Date(0);
+      const recent = [...users].sort((a,b) => {
+        const da = a.dataCadastro?.toDate?.() || new Date(a.dataCadastro||0);
+        const db2 = b.dataCadastro?.toDate?.() || new Date(b.dataCadastro||0);
         return db2 - da;
-      }).slice(0, 5);
+      }).slice(0,5);
 
-      document.getElementById('recentUsersTable').innerHTML = recent.length
-        ? recent.map(u => `
-          <tr>
-            <td>${u.nome||'—'}</td>
-            <td>${u.email||'—'}</td>
-            <td>${statusBadge(calcStatus(u))}</td>
-            <td>${formatDate(u.dataVencimento)}</td>
-          </tr>`).join('')
-        : '<tr class="empty-row"><td colspan="4">Nenhum usuário cadastrado</td></tr>';
-
+      document.getElementById('recentList').innerHTML = recent.length ? recent.map(u => {
+        const st = calcStatus(u);
+        const ini = (u.nome||u.email||'U').substring(0,2).toUpperCase();
+        return `<div class="card-list-item" onclick='abrirSheet("${u.uid}")'>
+          <div class="list-avatar" style="background:${avatarBg(u.nome)}">${ini}</div>
+          <div class="list-info">
+            <div class="list-name">${u.nome||'—'}</div>
+            <div class="list-email">${u.email||'—'}</div>
+          </div>
+          <span class="user-card-status status-${st}">${statusLabel(st)}</span>
+          <i class="fas fa-chevron-right list-chevron" style="margin-left:8px"></i>
+        </div>`;
+      }).join('') : '<div class="users-empty">Nenhum usuário ainda</div>';
     } catch(e) { console.error(e); }
   }
 
-  // ── USUARIOS ──────────────────────────────────────────
+  // ── USUÁRIOS ──────────────────────────────────────────
   async function carregarUsuarios() {
-    document.getElementById('usersTable').innerHTML = '<tr class="loading-row"><td colspan="6"><i class="fas fa-spinner fa-spin"></i> Carregando...</td></tr>';
+    document.getElementById('usersGrid').innerHTML = '<div class="users-loading"><div class="auth-spinner" style="width:20px;height:20px;border-width:2px"></div> Carregando...</div>';
     try {
-      const snap = await db.collection('usuarios').where('role', '!=', 'admin').get();
+      const snap = await db.collection('usuarios').where('role','!=','admin').get();
       allUsers = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
       filteredUsers = [...allUsers];
-      renderUsuarios();
-    } catch(e) {
-      document.getElementById('usersTable').innerHTML = '<tr class="empty-row"><td colspan="6">Erro ao carregar usuários</td></tr>';
-    }
+      renderGrid();
+    } catch(e) { document.getElementById('usersGrid').innerHTML = '<div class="users-empty">Erro ao carregar</div>'; }
   }
 
-  function filtrarUsuarios(query) {
-    const q = query.toLowerCase();
-    filteredUsers = allUsers.filter(u =>
-      (u.nome||'').toLowerCase().includes(q) ||
-      (u.email||'').toLowerCase().includes(q)
-    );
-    renderUsuarios();
+  function filtrarUsuarios(q) {
+    const query = q.toLowerCase();
+    filteredUsers = allUsers.filter(u => (u.nome||'').toLowerCase().includes(query) || (u.email||'').toLowerCase().includes(query));
+    renderGrid();
   }
 
-  function renderUsuarios() {
-    const tbody = document.getElementById('usersTable');
-    if (!filteredUsers.length) {
-      tbody.innerHTML = '<tr class="empty-row"><td colspan="6">Nenhum usuário encontrado</td></tr>';
-      return;
-    }
-    tbody.innerHTML = filteredUsers.map(u => {
-      const status = calcStatus(u);
-      const isBlocked = u.plano === 'bloqueado';
-      return `
-        <tr>
-          <td>${u.nome||'—'}</td>
-          <td style="color:var(--muted)">${u.email||'—'}</td>
-          <td>${formatDate(u.dataCadastro)}</td>
-          <td>${formatDate(u.dataVencimento)}</td>
-          <td>${statusBadge(status)}</td>
-          <td>
-            <div class="action-btns">
-              <button class="btn btn-sm btn-info" onclick="abrirModalEditar('${u.uid}')"><i class="fas fa-edit"></i></button>
-              <button class="btn btn-sm ${isBlocked ? 'btn-success' : 'btn-warning'}" onclick="${isBlocked ? `desbloquear('${u.uid}')` : `bloquear('${u.uid}')`}">
-                <i class="fas fa-${isBlocked ? 'unlock' : 'ban'}"></i>
-              </button>
-              <button class="btn btn-sm btn-success" onclick="abrirModalRenovar('${u.uid}')">
-                <i class="fas fa-calendar-plus"></i>
-              </button>
-              <button class="btn btn-sm btn-danger" onclick="excluirUsuario('${u.uid}')">
-                <i class="fas fa-trash"></i>
-              </button>
-            </div>
-          </td>
-        </tr>`;
+  function renderGrid() {
+    const grid = document.getElementById('usersGrid');
+    if (!filteredUsers.length) { grid.innerHTML = '<div class="users-empty">Nenhum usuário encontrado</div>'; return; }
+    grid.innerHTML = filteredUsers.map(u => {
+      const st  = calcStatus(u);
+      const ini = (u.nome||u.email||'U').substring(0,2).toUpperCase();
+      const venc = formatDate(u.dataVencimento);
+      return `<div class="user-card" onclick='abrirSheet("${u.uid}")'>
+        <div class="user-card-avatar" style="background:${avatarBg(u.nome)}">${ini}</div>
+        <div class="user-card-name">${u.nome||'—'}</div>
+        <div class="user-card-date">Vence ${venc}</div>
+        <div class="user-card-status status-${st}">${statusLabel(st)}</div>
+      </div>`;
     }).join('');
   }
 
-  // ── USER ACTIONS ──────────────────────────────────────
-  function abrirModalEditar(uid) {
-    const u = allUsers.find(u => u.uid === uid);
-    if (!u) return;
-    document.getElementById('editUserId').value = uid;
-    document.getElementById('editPlano').value = u.plano || 'ativo';
-    document.getElementById('editRole').value = u.role || 'servidor';
-
-    let v = u.dataVencimento?.toDate ? u.dataVencimento.toDate() : new Date(u.dataVencimento || '');
-    document.getElementById('editVencimento').value = v.toISOString().split('T')[0];
-    document.getElementById('modalUsuarioTitle').textContent = `Editar: ${u.nome||u.email}`;
-    document.getElementById('modalUsuario').classList.add('show');
+  // ── BOTTOM SHEET ──────────────────────────────────────
+  function abrirSheet(uid) {
+    // Se chamado da lista recente, carregar o user de lá
+    let u = allUsers.find(x => x.uid === uid);
+    if (!u) {
+      // Pode vir do dashboard — recarregar a partir do Firestore seria ideal,
+      // mas para o fluxo do sheet precisamos de dados. Trigger carregamento.
+      carregarUsuarios().then(() => { u = allUsers.find(x => x.uid === uid); if(u) _openSheet(u); });
+      return;
+    }
+    _openSheet(u);
   }
 
-  function fecharModal() { document.getElementById('modalUsuario').classList.remove('show'); }
+  function _openSheet(u) {
+    currentSheetUid = u.uid;
+    const ini = (u.nome||u.email||'U').substring(0,2).toUpperCase();
+    const st  = calcStatus(u);
+    const isBlocked = u.plano === 'bloqueado';
+
+    document.getElementById('sheetAvatar').textContent    = ini;
+    document.getElementById('sheetAvatar').style.background = avatarBg(u.nome);
+    document.getElementById('sheetName').textContent      = u.nome||'—';
+    document.getElementById('sheetEmail').textContent     = u.email||'—';
+    document.getElementById('sheetStatus').innerHTML      = `<span class="user-card-status status-${st}">${statusLabel(st)}</span>`;
+    document.getElementById('sheetCadastro').textContent  = formatDate(u.dataCadastro);
+    document.getElementById('sheetVencimento').textContent= formatDate(u.dataVencimento);
+    document.getElementById('sheetRole').textContent      = u.role==='admin'?'Administrador':'Servidor';
+
+    document.getElementById('editUserId').value  = u.uid;
+    document.getElementById('editPlano').value   = u.plano||'ativo';
+    document.getElementById('editRole').value    = u.role||'servidor';
+    let v = u.dataVencimento?.toDate ? u.dataVencimento.toDate() : new Date(u.dataVencimento||'');
+    if (!isNaN(v)) document.getElementById('editVencimento').value = v.toISOString().split('T')[0];
+
+    const blockBtn = document.getElementById('blockBtn');
+    if (isBlocked) {
+      blockBtn.className = 'sheet-btn unblock';
+      blockBtn.innerHTML = '<i class="fas fa-unlock"></i>Desbloquear';
+    } else {
+      blockBtn.className = 'sheet-btn block';
+      blockBtn.innerHTML = '<i class="fas fa-ban"></i>Bloquear';
+    }
+
+    document.getElementById('editPanel').classList.remove('show');
+    document.getElementById('renewPanel').classList.remove('show');
+    document.getElementById('sheetOverlay').classList.add('show');
+    document.getElementById('userSheet').classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function fecharSheet() {
+    document.getElementById('sheetOverlay').classList.remove('show');
+    document.getElementById('userSheet').classList.remove('show');
+    document.body.style.overflow = '';
+    currentSheetUid = null;
+  }
+
+  function toggleEditPanel()  { document.getElementById('renewPanel').classList.remove('show'); document.getElementById('editPanel').classList.toggle('show'); }
+  function toggleRenewPanel() { document.getElementById('editPanel').classList.remove('show');  document.getElementById('renewPanel').classList.toggle('show'); }
 
   async function salvarUsuario() {
     const uid = document.getElementById('editUserId').value;
     const plano = document.getElementById('editPlano').value;
-    const role = document.getElementById('editRole').value;
-    const vencimento = new Date(document.getElementById('editVencimento').value);
+    const role  = document.getElementById('editRole').value;
+    const venc  = new Date(document.getElementById('editVencimento').value);
     try {
-      await db.collection('usuarios').doc(uid).update({ plano, role, dataVencimento: vencimento });
-      fecharModal();
-      toast('Usuário atualizado!', 'success');
-      await carregarUsuarios();
-    } catch(e) { toast('Erro ao atualizar', 'error'); }
+      await db.collection('usuarios').doc(uid).update({ plano, role, dataVencimento: venc });
+      fecharSheet(); toast('Usuário atualizado!','success');
+      await carregarUsuarios(); await carregarDashboard();
+    } catch(e) { toast('Erro ao atualizar','error'); }
   }
 
-  async function bloquear(uid) {
-    if (!confirm('Bloquear este usuário?')) return;
-    await db.collection('usuarios').doc(uid).update({ plano: 'bloqueado' });
-    toast('Usuário bloqueado', 'info');
-    await carregarUsuarios();
+  async function blockAction() {
+    const u = allUsers.find(x => x.uid === currentSheetUid); if(!u) return;
+    if (u.plano === 'bloqueado') {
+      const v = new Date(); v.setDate(v.getDate()+30);
+      await db.collection('usuarios').doc(u.uid).update({ plano:'ativo', dataVencimento: v });
+      toast('Desbloqueado!','success');
+    } else {
+      if (!confirm('Bloquear este usuário?')) return;
+      await db.collection('usuarios').doc(u.uid).update({ plano:'bloqueado' });
+      toast('Bloqueado','info');
+    }
+    fecharSheet(); await carregarUsuarios(); await carregarDashboard();
   }
 
-  async function desbloquear(uid) {
-    const v = new Date(); v.setDate(v.getDate() + 30);
-    await db.collection('usuarios').doc(uid).update({ plano: 'ativo', dataVencimento: v });
-    toast('Usuário desbloqueado (+30 dias)!', 'success');
-    await carregarUsuarios();
-  }
-
-  async function excluirUsuario(uid) {
-    if (!confirm('Excluir este usuário permanentemente? Esta ação não pode ser desfeita!')) return;
-    if (!confirm('Tem certeza absoluta? Todos os dados serão perdidos.')) return;
+  async function excluirUsuario() {
+    if (!confirm('Excluir permanentemente? Não pode ser desfeito!')) return;
+    if (!confirm('Tem certeza absoluta?')) return;
     try {
-      await db.collection('usuarios').doc(uid).delete();
-      toast('Usuário excluído', 'info');
-      await carregarUsuarios();
-    } catch(e) { toast('Erro ao excluir', 'error'); }
+      await db.collection('usuarios').doc(currentSheetUid).delete();
+      fecharSheet(); toast('Usuário excluído','info');
+      await carregarUsuarios(); await carregarDashboard();
+    } catch(e) { toast('Erro ao excluir','error'); }
   }
-
-  // ── RENOVAÇÃO ─────────────────────────────────────────
-  function abrirModalRenovar(uid) {
-    document.getElementById('renovarUserId').value = uid;
-    document.getElementById('modalRenovar').classList.add('show');
-  }
-  function fecharModalRenovar() { document.getElementById('modalRenovar').classList.remove('show'); }
 
   async function confirmarRenovar() {
-    const uid = document.getElementById('renovarUserId').value;
     const dias = parseInt(document.getElementById('renovarDias').value);
-    const u = allUsers.find(u => u.uid === uid);
-    if (!u) return;
-
-    let base = u.dataVencimento?.toDate ? u.dataVencimento.toDate() : new Date(u.dataVencimento || new Date());
-    if (base < new Date()) base = new Date(); // Start from today if already expired
-    base.setDate(base.getDate() + dias);
-
-    await db.collection('usuarios').doc(uid).update({ dataVencimento: base, plano: 'ativo' });
-    fecharModalRenovar();
-    toast(`Renovado por ${dias} dias!`, 'success');
+    const u = allUsers.find(x => x.uid === currentSheetUid); if(!u) return;
+    let base = u.dataVencimento?.toDate ? u.dataVencimento.toDate() : new Date(u.dataVencimento||new Date());
+    if (base < new Date()) base = new Date();
+    base.setDate(base.getDate()+dias);
+    await db.collection('usuarios').doc(u.uid).update({ dataVencimento: base, plano:'ativo' });
+    fecharSheet(); toast(`Renovado por ${dias} dias!`,'success');
     await carregarUsuarios();
+  }
+
+  // ── CONFIGURAÇÕES ─────────────────────────────────────
+  async function carregarConfiguracoesSistema() {
+    try {
+      const snap = await db.collection('configuracoes').doc('sistema').get();
+      if (snap.exists) {
+        sysConfig = { ...sysConfig, ...snap.data() };
+        document.getElementById('valorMensalidade').value = sysConfig.valorMensalidade||29.90;
+        document.getElementById('diasAviso').value        = sysConfig.diasAviso||5;
+        document.getElementById('adminEmail').value       = sysConfig.adminEmail||'';
+      }
+    } catch(e) { console.error(e); }
+  }
+
+  async function salvarConfiguracoes() {
+    const valorMensalidade = parseFloat(document.getElementById('valorMensalidade').value)||29.90;
+    const diasAviso        = parseInt(document.getElementById('diasAviso').value)||5;
+    const adminEmail       = document.getElementById('adminEmail').value.trim();
+    try {
+      await db.collection('configuracoes').doc('sistema').set({ valorMensalidade, diasAviso, adminEmail },{ merge:true });
+      sysConfig = { valorMensalidade, diasAviso, adminEmail };
+      toast('Configurações salvas!','success');
+    } catch(e) { toast('Erro ao salvar','error'); }
   }
 
   // ── MASS ACTIONS ──────────────────────────────────────
   async function renovarTodasContas() {
     if (!confirm('Renovar todas as contas vencidas por 30 dias?')) return;
-    const snap = await db.collection('usuarios').get();
-    const agora = new Date();
-    let count = 0;
+    const snap = await db.collection('usuarios').get(); const agora = new Date(); let count=0;
     for (const doc of snap.docs) {
-      const u = doc.data();
-      if (u.role === 'admin') continue;
-      const v = u.dataVencimento?.toDate ? u.dataVencimento.toDate() : new Date(u.dataVencimento || 0);
-      if (agora > v || u.plano === 'vencido') {
-        const nova = new Date(); nova.setDate(nova.getDate() + 30);
-        await doc.ref.update({ dataVencimento: nova, plano: 'ativo' });
-        count++;
-      }
+      const u = doc.data(); if(u.role==='admin') continue;
+      const v = u.dataVencimento?.toDate ? u.dataVencimento.toDate() : new Date(u.dataVencimento||0);
+      if (agora>v || u.plano==='vencido') { const nova=new Date(); nova.setDate(nova.getDate()+30); await doc.ref.update({ dataVencimento:nova, plano:'ativo' }); count++; }
     }
-    toast(`${count} conta(s) renovadas!`, 'success');
-    await carregarDashboard();
+    toast(`${count} conta(s) renovadas!`,'success'); await carregarDashboard();
   }
 
   async function bloquearContasVencidas() {
     if (!confirm('Bloquear todas as contas vencidas?')) return;
-    const snap = await db.collection('usuarios').get();
-    const agora = new Date();
-    let count = 0;
+    const snap = await db.collection('usuarios').get(); const agora = new Date(); let count=0;
     for (const doc of snap.docs) {
-      const u = doc.data();
-      if (u.role === 'admin' || u.plano === 'bloqueado') continue;
-      const v = u.dataVencimento?.toDate ? u.dataVencimento.toDate() : new Date(u.dataVencimento || 0);
-      if (agora > v) {
-        await doc.ref.update({ plano: 'bloqueado' });
-        count++;
-      }
+      const u = doc.data(); if(u.role==='admin'||u.plano==='bloqueado') continue;
+      const v = u.dataVencimento?.toDate ? u.dataVencimento.toDate() : new Date(u.dataVencimento||0);
+      if (agora>v) { await doc.ref.update({ plano:'bloqueado' }); count++; }
     }
-    toast(`${count} conta(s) bloqueadas.`, 'info');
-    await carregarDashboard();
+    toast(`${count} conta(s) bloqueadas.`,'info'); await carregarDashboard();
   }
 </script>
 </body>
