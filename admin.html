@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Admin — AgendaFácil</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface2: #21262d;
+      --surface3: #30363d;
+      --border: rgba(255,255,255,0.07);
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --accent: #FF6B6B;
+      --accent2: #FFA500;
+      --success: #3fb950;
+      --warning: #d29922;
+      --danger: #f85149;
+      --info: #58a6ff;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── AUTH OVERLAY ── */
+    #authOverlay {
+      position: fixed; inset: 0; background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999; flex-direction: column; gap: 16px;
+    }
+    .auth-spinner {
+      width: 48px; height: 48px;
+      border: 4px solid rgba(255,107,107,0.2);
+      border-top-color: var(--accent);
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── LAYOUT ── */
+    .layout { display: flex; min-height: 100vh; }
+
+    /* Sidebar */
+    .sidebar {
+      width: 240px; background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      position: fixed; top: 0; left: 0; bottom: 0;
+      z-index: 100; transition: transform 0.3s ease;
+    }
+    .sidebar-brand {
+      padding: 24px 20px;
+      border-bottom: 1px solid var(--border);
+      font-family: 'Syne', sans-serif;
+      font-weight: 800; font-size: 1.1rem;
+      display: flex; align-items: center; gap: 10px;
+      color: var(--text);
+    }
+    .sidebar-brand .badge {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: white; font-size: 0.65rem; padding: 2px 8px;
+      border-radius: 20px; font-weight: 700; margin-left: auto;
+    }
+    .sidebar-nav { flex: 1; padding: 12px 0; }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 20px; color: var(--muted);
+      cursor: pointer; transition: all 0.2s ease;
+      font-size: 0.9rem; font-weight: 500; border: none;
+      background: none; width: 100%; text-align: left;
+    }
+    .nav-item:hover { color: var(--text); background: var(--surface2); }
+    .nav-item.active { color: var(--accent); background: rgba(255,107,107,0.08); border-left: 3px solid var(--accent); }
+    .nav-item i { width: 18px; text-align: center; font-size: 1rem; }
+    .sidebar-footer { padding: 16px 20px; border-top: 1px solid var(--border); }
+    .user-info {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 12px;
+    }
+    .user-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.9rem; color: white;
+    }
+    .user-name { font-size: 0.85rem; font-weight: 500; color: var(--text); }
+    .user-role { font-size: 0.75rem; color: var(--muted); }
+    .btn-logout {
+      width: 100%; padding: 10px; background: rgba(248,81,73,0.1);
+      border: 1px solid rgba(248,81,73,0.2); border-radius: 8px;
+      color: var(--danger); font-size: 0.85rem; cursor: pointer;
+      transition: all 0.2s ease; display: flex; align-items: center;
+      justify-content: center; gap: 8px; font-weight: 500;
+    }
+    .btn-logout:hover { background: rgba(248,81,73,0.2); }
+
+    /* Main */
+    .main { flex: 1; margin-left: 240px; padding: 28px; }
+
+    /* Page */
+    .page { display: none; animation: fadeIn 0.3s ease; }
+    .page.active { display: block; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+    /* Page header */
+    .page-header { margin-bottom: 24px; }
+    .page-header h1 {
+      font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 800;
+      color: var(--text); display: flex; align-items: center; gap: 12px;
+    }
+    .page-header p { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+
+    /* Stats grid */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px;
+    }
+    .stat-label { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .stat-value { font-size: 2rem; font-weight: 700; color: var(--text); font-family: 'Syne', sans-serif; }
+    .stat-sub { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+    .stat-card.success { border-color: rgba(63,185,80,0.3); }
+    .stat-card.warning { border-color: rgba(210,153,34,0.3); }
+    .stat-card.danger { border-color: rgba(248,81,73,0.3); }
+    .stat-card.info { border-color: rgba(88,166,255,0.3); }
+    .stat-value.success { color: var(--success); }
+    .stat-value.warning { color: var(--warning); }
+    .stat-value.danger { color: var(--danger); }
+    .stat-value.info { color: var(--info); }
+
+    /* Table */
+    .table-container { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 24px; }
+    .table-header {
+      padding: 16px 20px; border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .table-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; }
+    .table-search {
+      padding: 8px 14px; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text); font-size: 0.88rem; outline: none;
+      min-width: 200px;
+    }
+    .table-search::placeholder { color: var(--muted); }
+    .table-search:focus { border-color: var(--accent); }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      padding: 12px 16px; text-align: left; font-size: 0.78rem;
+      color: var(--muted); font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.5px; background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+    }
+    td { padding: 14px 16px; font-size: 0.88rem; border-bottom: 1px solid var(--border); color: var(--text); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--surface2); }
+
+    /* Status badges */
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;
+    }
+    .status-badge.ativo { background: rgba(63,185,80,0.15); color: var(--success); }
+    .status-badge.aviso { background: rgba(210,153,34,0.15); color: var(--warning); }
+    .status-badge.vencido { background: rgba(248,81,73,0.15); color: var(--danger); }
+    .status-badge.bloqueado { background: rgba(248,81,73,0.25); color: #ff6b6b; }
+    .status-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+    /* Buttons */
+    .btn {
+      padding: 8px 14px; border: none; border-radius: 8px;
+      cursor: pointer; font-weight: 600; font-size: 0.82rem;
+      display: inline-flex; align-items: center; gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .btn-sm { padding: 6px 10px; font-size: 0.78rem; }
+    .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-success { background: rgba(63,185,80,0.15); color: var(--success); border: 1px solid rgba(63,185,80,0.3); }
+    .btn-success:hover { background: rgba(63,185,80,0.25); }
+    .btn-danger { background: rgba(248,81,73,0.15); color: var(--danger); border: 1px solid rgba(248,81,73,0.3); }
+    .btn-danger:hover { background: rgba(248,81,73,0.25); }
+    .btn-warning { background: rgba(210,153,34,0.15); color: var(--warning); border: 1px solid rgba(210,153,34,0.3); }
+    .btn-info { background: rgba(88,166,255,0.15); color: var(--info); border: 1px solid rgba(88,166,255,0.3); }
+    .btn-info:hover { background: rgba(88,166,255,0.25); }
+    .btn-block { width: 100%; justify-content: center; }
+
+    /* Actions */
+    .action-btns { display: flex; gap: 6px; }
+
+    /* Config card */
+    .config-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+    .config-card h2 { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; color: var(--text); }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 0.82rem; font-weight: 500; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .form-input {
+      width: 100%; padding: 12px 16px; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 8px; color: var(--text);
+      font-size: 0.95rem; outline: none; transition: border-color 0.2s;
+    }
+    .form-input:focus { border-color: var(--accent); }
+    .form-input::placeholder { color: #4a5568; }
+
+    /* Modal */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7); z-index: 200;
+      align-items: center; justify-content: center; padding: 20px;
+      backdrop-filter: blur(4px);
+    }
+    .modal-overlay.show { display: flex; }
+    .modal-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 28px; max-width: 440px; width: 100%;
+      animation: fadeIn 0.3s ease;
+    }
+    .modal-box h3 { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 16px; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .modal-actions .btn { flex: 1; justify-content: center; padding: 12px; }
+
+    /* Toast */
+    .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+    .toast {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px 18px; font-size: 0.88rem;
+      display: flex; align-items: center; gap: 10px; max-width: 320px;
+      animation: toastIn 0.3s ease;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    .toast.success { border-color: rgba(63,185,80,0.4); }
+    .toast.error { border-color: rgba(248,81,73,0.4); }
+    .toast i { font-size: 1rem; }
+    .toast.success i { color: var(--success); }
+    .toast.error i { color: var(--danger); }
+    .toast.info i { color: var(--info); }
+    @keyframes toastIn { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
+
+    /* Loading */
+    .loading-row td { text-align: center; color: var(--muted); padding: 40px; }
+
+    /* Empty */
+    .empty-row td { text-align: center; color: var(--muted); padding: 40px; font-size: 0.9rem; }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); width: 260px; }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; padding: 16px; }
+      .mobile-header {
+        display: flex !important; align-items: center; justify-content: space-between;
+        padding: 16px; background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        position: sticky; top: 0; z-index: 50;
+      }
+      .hamburger {
+        background: none; border: none; color: var(--text); font-size: 1.3rem; cursor: pointer;
+      }
+      .stats-grid { grid-template-columns: repeat(2,1fr); }
+      .table-header { flex-direction: column; gap: 12px; align-items: flex-start; }
+      .table-search { width: 100%; }
+    }
+    .mobile-header { display: none; }
+    .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; }
+    .sidebar-overlay.show { display: block; }
+  </style>
+</head>
+<body>
+
+<div id="authOverlay">
+  <div class="auth-spinner"></div>
+  <p style="color:var(--muted)">Verificando acesso...</p>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<!-- Mobile header -->
+<div class="mobile-header">
+  <button class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+  <span style="font-family:Syne,sans-serif;font-weight:800;">AgendaFácil Admin</span>
+  <div style="width:36px"></div>
+</div>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      📅 AgendaFácil
+      <span class="badge">ADMIN</span>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-page="dashboard" onclick="navegarPara('dashboard')">
+        <i class="fas fa-chart-pie"></i> Dashboard
+      </button>
+      <button class="nav-item" data-page="usuarios" onclick="navegarPara('usuarios')">
+        <i class="fas fa-users"></i> Usuários
+      </button>
+      <button class="nav-item" data-page="configuracoes" onclick="navegarPara('configuracoes')">
+        <i class="fas fa-cog"></i> Configurações
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar" id="userAvatar">A</div>
+        <div>
+          <div class="user-name" id="userName">Admin</div>
+          <div class="user-role">Super Administrador</div>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="logout()">
+        <i class="fas fa-sign-out-alt"></i> Sair
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main" id="mainApp" style="display:none">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <h1><i class="fas fa-chart-pie" style="color:var(--accent)"></i> Dashboard</h1>
+        <p>Visão geral do sistema</p>
+      </div>
+
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card info"><div class="stat-label">Total de Contas</div><div class="stat-value info" id="statTotal">—</div></div>
+        <div class="stat-card success"><div class="stat-label">Contas Ativas</div><div class="stat-value success" id="statAtivo">—</div></div>
+        <div class="stat-card warning"><div class="stat-label">Em Aviso</div><div class="stat-value warning" id="statAviso">—</div></div>
+        <div class="stat-card danger"><div class="stat-label">Bloqueadas/Vencidas</div><div class="stat-value danger" id="statBloqueado">—</div></div>
+      </div>
+
+      <!-- Recent users table -->
+      <div class="table-container">
+        <div class="table-header">
+          <div class="table-title"><i class="fas fa-clock"></i> Contas Recentes</div>
+          <button class="btn btn-primary" onclick="navegarPara('usuarios')"><i class="fas fa-arrow-right"></i> Ver Todos</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Nome</th><th>Email</th><th>Status</th><th>Vencimento</th></tr></thead>
+            <tbody id="recentUsersTable">
+              <tr class="loading-row"><td colspan="4"><i class="fas fa-spinner fa-spin"></i> Carregando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- USUÁRIOS -->
+    <div class="page" id="page-usuarios">
+      <div class="page-header">
+        <h1><i class="fas fa-users" style="color:var(--info)"></i> Usuários</h1>
+        <p>Gerencie todas as contas do sistema</p>
+      </div>
+
+      <div class="table-container">
+        <div class="table-header">
+          <div class="table-title"><i class="fas fa-list"></i> Todos os Usuários</div>
+          <input type="text" class="table-search" id="searchInput" placeholder="🔍 Buscar por nome ou email..." oninput="filtrarUsuarios(this.value)">
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Cadastro</th>
+                <th>Vencimento</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="usersTable">
+              <tr class="loading-row"><td colspan="6"><i class="fas fa-spinner fa-spin"></i> Carregando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFIGURAÇÕES -->
+    <div class="page" id="page-configuracoes">
+      <div class="page-header">
+        <h1><i class="fas fa-cog" style="color:var(--accent2)"></i> Configurações</h1>
+        <p>Parâmetros globais do sistema</p>
+      </div>
+
+      <div class="config-card">
+        <h2><i class="fas fa-money-bill-wave" style="color:var(--success)"></i> Mensalidade</h2>
+        <div class="form-group">
+          <label>Valor da Mensalidade (R$)</label>
+          <input type="number" id="valorMensalidade" class="form-input" placeholder="29.90" step="0.01" min="0">
+        </div>
+        <div class="form-group">
+          <label>Dias de Aviso Antes do Vencimento</label>
+          <input type="number" id="diasAviso" class="form-input" placeholder="5" min="1" max="30">
+        </div>
+        <div class="form-group">
+          <label>Email do Super Administrador</label>
+          <input type="email" id="adminEmail" class="form-input" placeholder="admin@exemplo.com">
+        </div>
+        <button class="btn btn-primary" onclick="salvarConfiguracoes()" style="margin-top:8px;">
+          <i class="fas fa-save"></i> Salvar Configurações
+        </button>
+      </div>
+
+      <div class="config-card">
+        <h2><i class="fas fa-calendar-alt" style="color:var(--info)"></i> Ações em Massa</h2>
+        <p style="color:var(--muted);font-size:0.88rem;margin-bottom:16px;">Operações que afetam múltiplos usuários.</p>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <button class="btn btn-warning" onclick="renovarTodasContas()">
+            <i class="fas fa-sync-alt"></i> Renovar Contas Vencidas (+30 dias)
+          </button>
+          <button class="btn btn-danger" onclick="bloquearContasVencidas()">
+            <i class="fas fa-ban"></i> Bloquear Contas Vencidas
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Modal: editar usuário -->
+<div class="modal-overlay" id="modalUsuario">
+  <div class="modal-box">
+    <h3 id="modalUsuarioTitle">Editar Usuário</h3>
+    <input type="hidden" id="editUserId">
+    <div class="form-group">
+      <label>Plano / Status</label>
+      <select id="editPlano" class="form-input">
+        <option value="ativo">Ativo</option>
+        <option value="aviso">Em Aviso</option>
+        <option value="vencido">Vencido</option>
+        <option value="bloqueado">Bloqueado</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Data de Vencimento</label>
+      <input type="date" id="editVencimento" class="form-input">
+    </div>
+    <div class="form-group">
+      <label>Função</label>
+      <select id="editRole" class="form-input">
+        <option value="servidor">Servidor</option>
+        <option value="admin">Administrador</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="salvarUsuario()"><i class="fas fa-save"></i> Salvar</button>
+      <button class="btn btn-danger" onclick="fecharModal()"><i class="fas fa-times"></i> Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: renovar usuário -->
+<div class="modal-overlay" id="modalRenovar">
+  <div class="modal-box">
+    <h3>Renovar Assinatura</h3>
+    <input type="hidden" id="renovarUserId">
+    <p style="color:var(--muted);font-size:0.9rem;margin-bottom:16px;">Selecione por quantos dias renovar a conta:</p>
+    <div class="form-group">
+      <label>Dias de renovação</label>
+      <select id="renovarDias" class="form-input">
+        <option value="30">30 dias (1 mês)</option>
+        <option value="60">60 dias (2 meses)</option>
+        <option value="90">90 dias (3 meses)</option>
+        <option value="180">180 dias (6 meses)</option>
+        <option value="365">365 dias (1 ano)</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-success" onclick="confirmarRenovar()"><i class="fas fa-check"></i> Renovar</button>
+      <button class="btn btn-danger" onclick="fecharModalRenovar()"><i class="fas fa-times"></i> Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCuX3SRhDvZS_BiKIL1q_VFwacMBwZ5tbU",
+    authDomain: "appagenda-f278b.firebaseapp.com",
+    projectId: "appagenda-f278b",
+    storageBucket: "appagenda-f278b.firebasestorage.app",
+    messagingSenderId: "676987896115",
+    appId: "1:676987896115:web:74ecdbedabca34f5923e46"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  let allUsers = [];
+  let filteredUsers = [];
+  let sysConfig = { valorMensalidade: 29.90, diasAviso: 5, adminEmail: '' };
+
+  // ── AUTH ─────────────────────────────────────────────
+  auth.onAuthStateChanged(async user => {
+    if (!user) { window.location.href = 'index.html'; return; }
+
+    try {
+      const userDoc = await db.collection('usuarios').doc(user.uid).get();
+      if (!userDoc.exists || userDoc.data().role !== 'admin') {
+        // Check if admin by email (first setup)
+        const cfg = await db.collection('configuracoes').doc('sistema').get();
+        const adminEmail = cfg.exists ? cfg.data().adminEmail : null;
+
+        if (!adminEmail || user.email !== adminEmail) {
+          window.location.href = 'painel.html';
+          return;
+        }
+
+        // Promote to admin if not set
+        await db.collection('usuarios').doc(user.uid).set({
+          uid: user.uid, email: user.email,
+          nome: user.displayName || user.email,
+          role: 'admin', plano: 'ativo',
+          dataCadastro: firebase.firestore.FieldValue.serverTimestamp(),
+          dataVencimento: new Date('2099-12-31')
+        }, { merge: true });
+      }
+
+      // Setup UI
+      const nome = user.displayName || user.email;
+      document.getElementById('userName').textContent = nome;
+      document.getElementById('userAvatar').textContent = nome.charAt(0).toUpperCase();
+      document.getElementById('authOverlay').style.display = 'none';
+      document.getElementById('mainApp').style.display = 'block';
+
+      await carregarConfiguracoesSistema();
+      await carregarDashboard();
+    } catch(e) {
+      console.error(e);
+      window.location.href = 'index.html';
+    }
+  });
+
+  function logout() { auth.signOut().then(() => window.location.href = 'index.html'); }
+
+  // ── NAVIGATION ────────────────────────────────────────
+  function navegarPara(page) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById(`page-${page}`).classList.add('active');
+    document.querySelector(`[data-page="${page}"]`).classList.add('active');
+    if (page === 'dashboard') carregarDashboard();
+    if (page === 'usuarios') carregarUsuarios();
+    if (page === 'configuracoes') renderConfiguracoes();
+    closeSidebar();
+  }
+
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sidebarOverlay').classList.toggle('show');
+  }
+  function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('show');
+  }
+
+  // ── TOAST ─────────────────────────────────────────────
+  function toast(msg, type = 'success') {
+    const c = document.getElementById('toastContainer');
+    const div = document.createElement('div');
+    const icons = { success: 'check-circle', error: 'times-circle', info: 'info-circle' };
+    div.className = `toast ${type}`;
+    div.innerHTML = `<i class="fas fa-${icons[type]||'info-circle'}"></i> ${msg}`;
+    c.appendChild(div);
+    setTimeout(() => div.remove(), 3500);
+  }
+
+  // ── UTILS ─────────────────────────────────────────────
+  function formatDate(val) {
+    if (!val) return '—';
+    const d = val?.toDate ? val.toDate() : new Date(val);
+    return d.toLocaleDateString('pt-BR');
+  }
+
+  function calcStatus(userData) {
+    if (userData.plano === 'bloqueado') return 'bloqueado';
+    if (userData.plano === 'admin') return 'ativo';
+    const agora = new Date();
+    let v = userData.dataVencimento?.toDate ? userData.dataVencimento.toDate() : new Date(userData.dataVencimento || '2099-01-01');
+    if (agora > v) return 'vencido';
+    const diffDays = Math.ceil((v-agora)/86400000);
+    if (diffDays <= sysConfig.diasAviso) return 'aviso';
+    return userData.plano || 'ativo';
+  }
+
+  function statusBadge(status) {
+    const labels = { ativo: 'Ativo', aviso: 'Em Aviso', vencido: 'Vencido', bloqueado: 'Bloqueado' };
+    return `<span class="status-badge ${status}">${labels[status]||status}</span>`;
+  }
+
+  // ── SYSTEM CONFIG ─────────────────────────────────────
+  async function carregarConfiguracoesSistema() {
+    try {
+      const doc = await db.collection('configuracoes').doc('sistema').get();
+      if (doc.exists) { sysConfig = { ...sysConfig, ...doc.data() }; }
+      else {
+        // Create defaults
+        await db.collection('configuracoes').doc('sistema').set({
+          valorMensalidade: 29.90, diasAviso: 5, adminEmail: auth.currentUser?.email || ''
+        });
+      }
+    } catch(e) { console.error(e); }
+  }
+
+  function renderConfiguracoes() {
+    document.getElementById('valorMensalidade').value = sysConfig.valorMensalidade || 29.90;
+    document.getElementById('diasAviso').value = sysConfig.diasAviso || 5;
+    document.getElementById('adminEmail').value = sysConfig.adminEmail || auth.currentUser?.email || '';
+  }
+
+  async function salvarConfiguracoes() {
+    const valor = parseFloat(document.getElementById('valorMensalidade').value);
+    const dias = parseInt(document.getElementById('diasAviso').value);
+    const email = document.getElementById('adminEmail').value.trim();
+    if (isNaN(valor) || valor < 0) { toast('Valor inválido', 'error'); return; }
+    if (isNaN(dias) || dias < 1) { toast('Dias inválido', 'error'); return; }
+    try {
+      await db.collection('configuracoes').doc('sistema').set({ valorMensalidade: valor, diasAviso: dias, adminEmail: email });
+      sysConfig = { valorMensalidade: valor, diasAviso: dias, adminEmail: email };
+      toast('Configurações salvas!', 'success');
+    } catch(e) { toast('Erro ao salvar', 'error'); }
+  }
+
+  // ── DASHBOARD ─────────────────────────────────────────
+  async function carregarDashboard() {
+    try {
+      const snap = await db.collection('usuarios').where('role', '!=', 'admin').get();
+      allUsers = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+
+      let total = 0, ativo = 0, aviso = 0, bloqueado = 0;
+      allUsers.forEach(u => {
+        total++;
+        const st = calcStatus(u);
+        if (st === 'ativo') ativo++;
+        else if (st === 'aviso') aviso++;
+        else bloqueado++;
+      });
+
+      document.getElementById('statTotal').textContent = total;
+      document.getElementById('statAtivo').textContent = ativo;
+      document.getElementById('statAviso').textContent = aviso;
+      document.getElementById('statBloqueado').textContent = bloqueado;
+
+      // Recent 5
+      const recent = [...allUsers].sort((a,b) => {
+        const da = a.dataCadastro?.toDate?.() || new Date(0);
+        const db2 = b.dataCadastro?.toDate?.() || new Date(0);
+        return db2 - da;
+      }).slice(0, 5);
+
+      document.getElementById('recentUsersTable').innerHTML = recent.length
+        ? recent.map(u => `
+          <tr>
+            <td>${u.nome||'—'}</td>
+            <td>${u.email||'—'}</td>
+            <td>${statusBadge(calcStatus(u))}</td>
+            <td>${formatDate(u.dataVencimento)}</td>
+          </tr>`).join('')
+        : '<tr class="empty-row"><td colspan="4">Nenhum usuário cadastrado</td></tr>';
+
+    } catch(e) { console.error(e); }
+  }
+
+  // ── USUARIOS ──────────────────────────────────────────
+  async function carregarUsuarios() {
+    document.getElementById('usersTable').innerHTML = '<tr class="loading-row"><td colspan="6"><i class="fas fa-spinner fa-spin"></i> Carregando...</td></tr>';
+    try {
+      const snap = await db.collection('usuarios').where('role', '!=', 'admin').get();
+      allUsers = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+      filteredUsers = [...allUsers];
+      renderUsuarios();
+    } catch(e) {
+      document.getElementById('usersTable').innerHTML = '<tr class="empty-row"><td colspan="6">Erro ao carregar usuários</td></tr>';
+    }
+  }
+
+  function filtrarUsuarios(query) {
+    const q = query.toLowerCase();
+    filteredUsers = allUsers.filter(u =>
+      (u.nome||'').toLowerCase().includes(q) ||
+      (u.email||'').toLowerCase().includes(q)
+    );
+    renderUsuarios();
+  }
+
+  function renderUsuarios() {
+    const tbody = document.getElementById('usersTable');
+    if (!filteredUsers.length) {
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="6">Nenhum usuário encontrado</td></tr>';
+      return;
+    }
+    tbody.innerHTML = filteredUsers.map(u => {
+      const status = calcStatus(u);
+      const isBlocked = u.plano === 'bloqueado';
+      return `
+        <tr>
+          <td>${u.nome||'—'}</td>
+          <td style="color:var(--muted)">${u.email||'—'}</td>
+          <td>${formatDate(u.dataCadastro)}</td>
+          <td>${formatDate(u.dataVencimento)}</td>
+          <td>${statusBadge(status)}</td>
+          <td>
+            <div class="action-btns">
+              <button class="btn btn-sm btn-info" onclick="abrirModalEditar('${u.uid}')"><i class="fas fa-edit"></i></button>
+              <button class="btn btn-sm ${isBlocked ? 'btn-success' : 'btn-warning'}" onclick="${isBlocked ? `desbloquear('${u.uid}')` : `bloquear('${u.uid}')`}">
+                <i class="fas fa-${isBlocked ? 'unlock' : 'ban'}"></i>
+              </button>
+              <button class="btn btn-sm btn-success" onclick="abrirModalRenovar('${u.uid}')">
+                <i class="fas fa-calendar-plus"></i>
+              </button>
+              <button class="btn btn-sm btn-danger" onclick="excluirUsuario('${u.uid}')">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>`;
+    }).join('');
+  }
+
+  // ── USER ACTIONS ──────────────────────────────────────
+  function abrirModalEditar(uid) {
+    const u = allUsers.find(u => u.uid === uid);
+    if (!u) return;
+    document.getElementById('editUserId').value = uid;
+    document.getElementById('editPlano').value = u.plano || 'ativo';
+    document.getElementById('editRole').value = u.role || 'servidor';
+
+    let v = u.dataVencimento?.toDate ? u.dataVencimento.toDate() : new Date(u.dataVencimento || '');
+    document.getElementById('editVencimento').value = v.toISOString().split('T')[0];
+    document.getElementById('modalUsuarioTitle').textContent = `Editar: ${u.nome||u.email}`;
+    document.getElementById('modalUsuario').classList.add('show');
+  }
+
+  function fecharModal() { document.getElementById('modalUsuario').classList.remove('show'); }
+
+  async function salvarUsuario() {
+    const uid = document.getElementById('editUserId').value;
+    const plano = document.getElementById('editPlano').value;
+    const role = document.getElementById('editRole').value;
+    const vencimento = new Date(document.getElementById('editVencimento').value);
+    try {
+      await db.collection('usuarios').doc(uid).update({ plano, role, dataVencimento: vencimento });
+      fecharModal();
+      toast('Usuário atualizado!', 'success');
+      await carregarUsuarios();
+    } catch(e) { toast('Erro ao atualizar', 'error'); }
+  }
+
+  async function bloquear(uid) {
+    if (!confirm('Bloquear este usuário?')) return;
+    await db.collection('usuarios').doc(uid).update({ plano: 'bloqueado' });
+    toast('Usuário bloqueado', 'info');
+    await carregarUsuarios();
+  }
+
+  async function desbloquear(uid) {
+    const v = new Date(); v.setDate(v.getDate() + 30);
+    await db.collection('usuarios').doc(uid).update({ plano: 'ativo', dataVencimento: v });
+    toast('Usuário desbloqueado (+30 dias)!', 'success');
+    await carregarUsuarios();
+  }
+
+  async function excluirUsuario(uid) {
+    if (!confirm('Excluir este usuário permanentemente? Esta ação não pode ser desfeita!')) return;
+    if (!confirm('Tem certeza absoluta? Todos os dados serão perdidos.')) return;
+    try {
+      await db.collection('usuarios').doc(uid).delete();
+      toast('Usuário excluído', 'info');
+      await carregarUsuarios();
+    } catch(e) { toast('Erro ao excluir', 'error'); }
+  }
+
+  // ── RENOVAÇÃO ─────────────────────────────────────────
+  function abrirModalRenovar(uid) {
+    document.getElementById('renovarUserId').value = uid;
+    document.getElementById('modalRenovar').classList.add('show');
+  }
+  function fecharModalRenovar() { document.getElementById('modalRenovar').classList.remove('show'); }
+
+  async function confirmarRenovar() {
+    const uid = document.getElementById('renovarUserId').value;
+    const dias = parseInt(document.getElementById('renovarDias').value);
+    const u = allUsers.find(u => u.uid === uid);
+    if (!u) return;
+
+    let base = u.dataVencimento?.toDate ? u.dataVencimento.toDate() : new Date(u.dataVencimento || new Date());
+    if (base < new Date()) base = new Date(); // Start from today if already expired
+    base.setDate(base.getDate() + dias);
+
+    await db.collection('usuarios').doc(uid).update({ dataVencimento: base, plano: 'ativo' });
+    fecharModalRenovar();
+    toast(`Renovado por ${dias} dias!`, 'success');
+    await carregarUsuarios();
+  }
+
+  // ── MASS ACTIONS ──────────────────────────────────────
+  async function renovarTodasContas() {
+    if (!confirm('Renovar todas as contas vencidas por 30 dias?')) return;
+    const snap = await db.collection('usuarios').get();
+    const agora = new Date();
+    let count = 0;
+    for (const doc of snap.docs) {
+      const u = doc.data();
+      if (u.role === 'admin') continue;
+      const v = u.dataVencimento?.toDate ? u.dataVencimento.toDate() : new Date(u.dataVencimento || 0);
+      if (agora > v || u.plano === 'vencido') {
+        const nova = new Date(); nova.setDate(nova.getDate() + 30);
+        await doc.ref.update({ dataVencimento: nova, plano: 'ativo' });
+        count++;
+      }
+    }
+    toast(`${count} conta(s) renovadas!`, 'success');
+    await carregarDashboard();
+  }
+
+  async function bloquearContasVencidas() {
+    if (!confirm('Bloquear todas as contas vencidas?')) return;
+    const snap = await db.collection('usuarios').get();
+    const agora = new Date();
+    let count = 0;
+    for (const doc of snap.docs) {
+      const u = doc.data();
+      if (u.role === 'admin' || u.plano === 'bloqueado') continue;
+      const v = u.dataVencimento?.toDate ? u.dataVencimento.toDate() : new Date(u.dataVencimento || 0);
+      if (agora > v) {
+        await doc.ref.update({ plano: 'bloqueado' });
+        count++;
+      }
+    }
+    toast(`${count} conta(s) bloqueadas.`, 'info');
+    await carregarDashboard();
+  }
+</script>
+</body>
+</html>

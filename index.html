@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>AgendaFácil — Entrar</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0c10;
+      --surface: #12151c;
+      --surface2: #1a1f2a;
+      --border: rgba(255,255,255,0.08);
+      --accent: #FF6B6B;
+      --accent2: #FFA500;
+      --text: #f0f2f5;
+      --muted: #8892a4;
+      --success: #2dd4bf;
+      --error: #ff6b6b;
+      --google: #4285F4;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Background decoration */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(255,107,107,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 80% 90%, rgba(255,165,0,0.08) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    /* Logo / Brand */
+    .brand {
+      text-align: center;
+      margin-bottom: 36px;
+      animation: slideDown 0.6s cubic-bezier(.22,1,.36,1);
+    }
+
+    .brand-icon {
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      font-size: 28px;
+      box-shadow: 0 8px 32px rgba(255,107,107,0.35);
+    }
+
+    .brand h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #fff 30%, var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .brand p {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 6px;
+    }
+
+    /* Card */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+      animation: slideUp 0.6s cubic-bezier(.22,1,.36,1) 0.1s both;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 28px;
+      border: 1px solid var(--border);
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border-radius: 9px;
+      transition: all 0.3s ease;
+    }
+
+    .tab-btn.active {
+      background: var(--surface2);
+      color: var(--text);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    /* Form */
+    .form-section { display: none; }
+    .form-section.active { display: block; }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(255,107,107,0.15);
+    }
+
+    input::placeholder { color: #4a5568; }
+
+    /* Divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 20px 0;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* Buttons */
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      letter-spacing: 0.3px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: white;
+      box-shadow: 0 4px 20px rgba(255,107,107,0.4);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(255,107,107,0.5);
+    }
+
+    .btn-primary:active { transform: translateY(0); }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-google {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      margin-bottom: 8px;
+    }
+
+    .btn-google:hover {
+      background: var(--bg);
+      border-color: rgba(255,255,255,0.15);
+      transform: translateY(-1px);
+    }
+
+    .google-icon {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* Alert */
+    .alert {
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      margin-bottom: 16px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .alert.error {
+      background: rgba(255,107,107,0.1);
+      border: 1px solid rgba(255,107,107,0.25);
+      color: #ff9999;
+      display: flex;
+    }
+
+    .alert.success {
+      background: rgba(45,212,191,0.1);
+      border: 1px solid rgba(45,212,191,0.25);
+      color: var(--success);
+      display: flex;
+    }
+
+    /* Loading spinner */
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      margin-top: 24px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      animation: fadeIn 0.6s ease 0.4s both;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Blocked overlay */
+    .blocked-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.9);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .blocked-card {
+      background: var(--surface);
+      border: 1px solid rgba(255,107,107,0.3);
+      border-radius: 20px;
+      padding: 40px 32px;
+      text-align: center;
+      max-width: 380px;
+      width: 100%;
+    }
+
+    .blocked-icon { font-size: 3rem; margin-bottom: 16px; }
+    .blocked-card h2 { font-family: 'Syne', sans-serif; font-size: 1.4rem; margin-bottom: 12px; color: var(--accent); }
+    .blocked-card p { color: var(--muted); font-size: 0.9rem; line-height: 1.6; }
+    .blocked-card .btn { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <!-- Blocked overlay -->
+  <div class="blocked-overlay" id="blockedOverlay">
+    <div class="blocked-card">
+      <div class="blocked-icon">🔒</div>
+      <h2>Acesso Bloqueado</h2>
+      <p id="blockedMsg">Sua conta está bloqueada. Entre em contato com o administrador para regularizar sua situação.</p>
+      <button class="btn btn-primary" onclick="logout()">Sair</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="brand">
+      <div class="brand-icon">📅</div>
+      <h1>AgendaFácil</h1>
+      <p>Gerencie seus agendamentos com facilidade</p>
+    </div>
+
+    <div class="card">
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('login')">Entrar</button>
+        <button class="tab-btn" onclick="switchTab('register')">Criar Conta</button>
+      </div>
+
+      <div id="alertBox" class="alert"></div>
+
+      <!-- LOGIN -->
+      <div class="form-section active" id="loginSection">
+        <button class="btn btn-google" onclick="loginGoogle()">
+          <svg class="google-icon" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          Continuar com Google
+        </button>
+
+        <div class="divider">ou com email</div>
+
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="loginEmail" placeholder="seu@email.com" />
+        </div>
+        <div class="form-group">
+          <label>Senha</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" />
+        </div>
+
+        <button class="btn btn-primary" onclick="loginEmail()" id="btnLogin">
+          <span class="spinner" id="spinnerLogin"></span>
+          Entrar
+        </button>
+      </div>
+
+      <!-- REGISTER -->
+      <div class="form-section" id="registerSection">
+        <button class="btn btn-google" onclick="registerGoogle()">
+          <svg class="google-icon" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          Registrar com Google
+        </button>
+
+        <div class="divider">ou com email</div>
+
+        <div class="form-group">
+          <label>Nome completo</label>
+          <input type="text" id="registerName" placeholder="Seu nome" />
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="registerEmail" placeholder="seu@email.com" />
+        </div>
+        <div class="form-group">
+          <label>Senha (mín. 6 caracteres)</label>
+          <input type="password" id="registerPassword" placeholder="••••••••" />
+        </div>
+
+        <button class="btn btn-primary" onclick="registerEmailPass()" id="btnRegister">
+          <span class="spinner" id="spinnerRegister"></span>
+          Criar Conta Grátis
+        </button>
+      </div>
+    </div>
+
+    <div class="footer">
+      Ao continuar, você concorda com os Termos de Uso.<br>
+      Primeiro mês grátis. Sem cartão de crédito.
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCuX3SRhDvZS_BiKIL1q_VFwacMBwZ5tbU",
+      authDomain: "appagenda-f278b.firebaseapp.com",
+      projectId: "appagenda-f278b",
+      storageBucket: "appagenda-f278b.firebasestorage.app",
+      messagingSenderId: "676987896115",
+      appId: "1:676987896115:web:74ecdbedabca34f5923e46"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // ── UI ────────────────────────────────────────────────
+    let currentTab = 'login';
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab-btn').forEach((b, i) => {
+        b.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'register'));
+      });
+      document.getElementById('loginSection').classList.toggle('active', tab === 'login');
+      document.getElementById('registerSection').classList.toggle('active', tab === 'register');
+      clearAlert();
+    }
+
+    function showAlert(msg, type = 'error') {
+      const box = document.getElementById('alertBox');
+      box.textContent = (type === 'error' ? '⚠ ' : '✓ ') + msg;
+      box.className = `alert ${type}`;
+    }
+
+    function clearAlert() {
+      const box = document.getElementById('alertBox');
+      box.className = 'alert';
+    }
+
+    function setLoading(btn, spinner, loading) {
+      document.getElementById(btn).disabled = loading;
+      document.getElementById(spinner).style.display = loading ? 'block' : 'none';
+    }
+
+    // ── AUTH REDIRECT ─────────────────────────────────────
+    auth.onAuthStateChanged(async user => {
+      if (!user) return;
+
+      try {
+        const docSnap = await db.collection('usuarios').doc(user.uid).get();
+        if (!docSnap.exists) return; // new user, being handled elsewhere
+
+        const data = docSnap.data();
+
+        if (data.role === 'admin') {
+          window.location.href = 'admin.html';
+          return;
+        }
+
+        // Check subscription
+        const plano = await verificarAssinatura(user.uid, data);
+        if (plano === 'bloqueado') {
+          showBlockedOverlay('Sua conta está bloqueada. Entre em contato com o administrador.');
+        } else {
+          window.location.href = 'painel.html';
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    });
+
+    async function verificarAssinatura(uid, userData) {
+      if (userData.plano === 'bloqueado') return 'bloqueado';
+
+      const agora = new Date();
+      const vencimento = userData.dataVencimento?.toDate ? userData.dataVencimento.toDate() : new Date(userData.dataVencimento);
+
+      if (agora > vencimento) {
+        // Auto-block
+        await db.collection('usuarios').doc(uid).update({ plano: 'vencido' });
+        return 'vencido';
+      }
+
+      return userData.plano || 'ativo';
+    }
+
+    function showBlockedOverlay(msg) {
+      document.getElementById('blockedMsg').textContent = msg;
+      document.getElementById('blockedOverlay').style.display = 'flex';
+    }
+
+    function logout() {
+      auth.signOut().then(() => window.location.reload());
+    }
+
+    // ── CREATE USER DOC ───────────────────────────────────
+    async function createUserDoc(user, nomeExtra) {
+      const existing = await db.collection('usuarios').doc(user.uid).get();
+      if (existing.exists) return existing.data();
+
+      // Carregar configuração global para pegar valor da mensalidade
+      let valorMensalidade = 29.90;
+      try {
+        const cfg = await db.collection('configuracoes').doc('sistema').get();
+        if (cfg.exists) valorMensalidade = cfg.data().valorMensalidade || 29.90;
+      } catch(e) {}
+
+      const agora = new Date();
+      const vencimento = new Date(agora);
+      vencimento.setDate(vencimento.getDate() + 30); // 30 dias grátis
+
+      const userData = {
+        uid: user.uid,
+        email: user.email,
+        nome: nomeExtra || user.displayName || user.email.split('@')[0],
+        role: 'servidor',
+        plano: 'ativo',
+        dataCadastro: firebase.firestore.FieldValue.serverTimestamp(),
+        dataVencimento: vencimento,
+        valorMensalidade: valorMensalidade,
+        primeiroMesGratis: true
+      };
+
+      await db.collection('usuarios').doc(user.uid).set(userData);
+
+      // Criar configurações padrão da empresa
+      await db.collection('Agendou').doc(user.uid)
+        .collection('configuracoes').doc('empresa')
+        .set({
+          nomeEmpresa: nomeExtra || user.displayName || 'Minha Empresa',
+          slogan: 'Agende seu horário com praticidade',
+          whatsapp: '',
+          horarios: ['09:00', '11:00', '13:00', '15:00'],
+          tema: 'vermelho-laranja'
+        });
+
+      return userData;
+    }
+
+    // ── LOGIN COM EMAIL ───────────────────────────────────
+    async function loginEmail() {
+      const email = document.getElementById('loginEmail').value.trim();
+      const pass = document.getElementById('loginPassword').value;
+      if (!email || !pass) { showAlert('Preencha email e senha.'); return; }
+
+      setLoading('btnLogin', 'spinnerLogin', true);
+      clearAlert();
+
+      try {
+        await auth.signInWithEmailAndPassword(email, pass);
+        // onAuthStateChanged will handle redirect
+      } catch (e) {
+        const msgs = {
+          'auth/user-not-found': 'Usuário não encontrado.',
+          'auth/wrong-password': 'Senha incorreta.',
+          'auth/invalid-credential': 'Email ou senha inválidos.',
+          'auth/too-many-requests': 'Muitas tentativas. Aguarde e tente novamente.'
+        };
+        showAlert(msgs[e.code] || 'Erro ao entrar: ' + e.message);
+        setLoading('btnLogin', 'spinnerLogin', false);
+      }
+    }
+
+    // ── REGISTRO COM EMAIL ────────────────────────────────
+    async function registerEmailPass() {
+      const name = document.getElementById('registerName').value.trim();
+      const email = document.getElementById('registerEmail').value.trim();
+      const pass = document.getElementById('registerPassword').value;
+
+      if (!name || !email || !pass) { showAlert('Preencha todos os campos.'); return; }
+      if (pass.length < 6) { showAlert('Senha deve ter ao menos 6 caracteres.'); return; }
+
+      setLoading('btnRegister', 'spinnerRegister', true);
+      clearAlert();
+
+      try {
+        const cred = await auth.createUserWithEmailAndPassword(email, pass);
+        await cred.user.updateProfile({ displayName: name });
+        await createUserDoc(cred.user, name);
+        window.location.href = 'painel.html';
+      } catch (e) {
+        const msgs = {
+          'auth/email-already-in-use': 'Este email já está cadastrado.',
+          'auth/weak-password': 'Senha muito fraca.',
+          'auth/invalid-email': 'Email inválido.'
+        };
+        showAlert(msgs[e.code] || 'Erro: ' + e.message);
+        setLoading('btnRegister', 'spinnerRegister', false);
+      }
+    }
+
+    // ── GOOGLE ────────────────────────────────────────────
+    const provider = new firebase.auth.GoogleAuthProvider();
+
+    async function loginGoogle() {
+      clearAlert();
+      try {
+        const result = await auth.signInWithPopup(provider);
+        const userDoc = await db.collection('usuarios').doc(result.user.uid).get();
+        if (!userDoc.exists) {
+          await createUserDoc(result.user, result.user.displayName);
+        }
+        // onAuthStateChanged handles redirect
+      } catch (e) {
+        showAlert('Erro ao entrar com Google: ' + e.message);
+      }
+    }
+
+    async function registerGoogle() {
+      await loginGoogle(); // Same flow
+    }
+
+    // Enter key support
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        if (currentTab === 'login') loginEmail();
+        else registerEmailPass();
+      }
+    });
+  </script>
+</body>
+</html>
