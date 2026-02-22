@@ -344,21 +344,22 @@
     .blocked-card p { color: var(--muted); font-size: 0.9rem; line-height: 1.6; }
     .blocked-card .btn { margin-top: 20px; }
   </style>
-    <!-- PWA Configuration -->
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#212121">
 
-<!-- iOS PWA Support -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Agenda+ Adm">
-<link rel="apple-touch-icon" href="favicon.ico">
+  <!-- ✅ PWA Configuration — caminhos corrigidos para /nlrd96/ -->
+  <link rel="manifest" href="/nlrd96/manifest.json">
+  <meta name="theme-color" content="#212121">
 
-<!-- Android PWA Support -->
-<meta name="mobile-web-app-capable" content="yes">
+  <!-- iOS PWA Support -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Agenda+ Adm">
+  <link rel="apple-touch-icon" href="favicon.ico">
 
-<!-- PWA Install Prompt -->
-<meta name="application-name" content="Agenda+ Adm">
+  <!-- Android PWA Support -->
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <!-- PWA Install Prompt -->
+  <meta name="application-name" content="Agenda+ Adm">
 </head>
 <body>
   <!-- Blocked overlay -->
@@ -507,7 +508,7 @@
 
       try {
         const docSnap = await db.collection('usuarios').doc(user.uid).get();
-        if (!docSnap.exists) return; // new user, being handled elsewhere
+        if (!docSnap.exists) return;
 
         const data = docSnap.data();
 
@@ -516,7 +517,6 @@
           return;
         }
 
-        // Usuário comum — não tem acesso ao painel admin
         showBlockedOverlay('Você não tem permissão para acessar este painel. Entre em contato com o administrador.');
       } catch (e) {
         console.error(e);
@@ -530,7 +530,6 @@
       const vencimento = userData.dataVencimento?.toDate ? userData.dataVencimento.toDate() : new Date(userData.dataVencimento);
 
       if (agora > vencimento) {
-        // Auto-block
         await db.collection('usuarios').doc(uid).update({ plano: 'vencido' });
         return 'vencido';
       }
@@ -552,7 +551,6 @@
       const existing = await db.collection('usuarios').doc(user.uid).get();
       if (existing.exists) return existing.data();
 
-      // Carregar configuração global para pegar valor da mensalidade
       let valorMensalidade = 29.90;
       try {
         const cfg = await db.collection('configuracoes').doc('sistema').get();
@@ -561,7 +559,7 @@
 
       const agora = new Date();
       const vencimento = new Date(agora);
-      vencimento.setDate(vencimento.getDate() + 30); // 30 dias grátis
+      vencimento.setDate(vencimento.getDate() + 30);
 
       const userData = {
         uid: user.uid,
@@ -577,7 +575,6 @@
 
       await db.collection('usuarios').doc(user.uid).set(userData);
 
-      // Criar configurações padrão da empresa
       await db.collection('Agendou').doc(user.uid)
         .collection('configuracoes').doc('empresa')
         .set({
@@ -602,7 +599,6 @@
 
       try {
         await auth.signInWithEmailAndPassword(email, pass);
-        // onAuthStateChanged will handle redirect
       } catch (e) {
         const msgs = {
           'auth/user-not-found': 'Usuário não encontrado.',
@@ -654,14 +650,13 @@
         if (!userDoc.exists) {
           await createUserDoc(result.user, result.user.displayName);
         }
-        // onAuthStateChanged handles redirect
       } catch (e) {
         showAlert('Erro ao entrar com Google: ' + e.message);
       }
     }
 
     async function registerGoogle() {
-      await loginGoogle(); // Same flow
+      await loginGoogle();
     }
 
     // Enter key support
@@ -677,37 +672,31 @@
 let deferredPrompt;
 const installButton = document.createElement('button');
 
-// Detecta quando o app pode ser instalado
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
   
-  // Mostra botão de instalação se não estiver já instalado
   if (!window.matchMedia('(display-mode: standalone)').matches) {
     showInstallPromotion();
   }
 });
 
-// Quando o app é instalado
 window.addEventListener('appinstalled', () => {
   console.log('PWA instalado com sucesso!');
   deferredPrompt = null;
-  
-  // Remove o botão de instalação
   if (installButton.parentNode) {
     installButton.parentNode.removeChild(installButton);
   }
 });
 
-// Mostra promoção de instalação
 function showInstallPromotion() {
-  installButton.innerHTML = '<i class="fas fa-download"></i> Instalar App';
+  installButton.innerHTML = '⬇ Instalar App';
   installButton.style.cssText = `
     position: fixed;
     bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
-    background: var(--primary-color);
+    background: var(--accent);
     color: white;
     border: none;
     padding: 12px 24px;
@@ -725,7 +714,6 @@ function showInstallPromotion() {
   installButton.onclick = installPWA;
   document.body.appendChild(installButton);
   
-  // Remove automaticamente após 30 segundos
   setTimeout(() => {
     if (installButton.parentNode) {
       installButton.style.opacity = '0';
@@ -738,12 +726,9 @@ function showInstallPromotion() {
   }, 30000);
 }
 
-// Instala o PWA
 function installPWA() {
   if (!deferredPrompt) return;
-  
   deferredPrompt.prompt();
-  
   deferredPrompt.userChoice.then((choiceResult) => {
     if (choiceResult.outcome === 'accepted') {
       console.log('Usuário aceitou instalação');
@@ -755,20 +740,19 @@ function installPWA() {
 }
 
 // ========== SERVICE WORKER REGISTRATION ==========
+// ✅ Caminho corrigido para /nlrd96/sw.js
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    const swUrl = '/sw.js';
+    const swUrl = '/nlrd96/sw.js';
     
     navigator.serviceWorker.register(swUrl)
       .then(registration => {
         console.log('Service Worker registrado:', registration);
         
-        // Verifica atualizações periodicamente
         setInterval(() => {
           registration.update();
-        }, 60 * 60 * 1000); // A cada hora
+        }, 60 * 60 * 1000);
         
-        // Escuta por nova versão
         registration.addEventListener('updatefound', () => {
           const newWorker = registration.installing;
           console.log('Nova versão do Service Worker encontrada');
@@ -781,23 +765,15 @@ if ('serviceWorker' in navigator) {
 }
 
 // ========== PWA UTILITIES ==========
-
-// Verifica se está rodando como PWA
 function isRunningAsPWA() {
   return window.matchMedia('(display-mode: standalone)').matches || 
          window.navigator.standalone ||
          document.referrer.includes('android-app://');
 }
 
-// Detecta modo de display
 if (isRunningAsPWA()) {
   console.log('Rodando como PWA instalado');
   document.documentElement.classList.add('pwa-mode');
-  
-  // Otimizações para PWA
-  if ('connection' in navigator && navigator.connection.saveData === true) {
-    console.log('Modo dados economizados ativado');
-  }
 } else {
   console.log('Rodando no navegador');
 }
@@ -806,8 +782,6 @@ if (isRunningAsPWA()) {
 function updateOnlineStatus() {
   const status = navigator.onLine ? 'online' : 'offline';
   document.documentElement.setAttribute('data-network', status);
-  
-  // Mostra notificação de status
   if (status === 'offline') {
     showOfflineNotification();
   }
@@ -819,12 +793,12 @@ updateOnlineStatus();
 
 function showOfflineNotification() {
   const notification = document.createElement('div');
-  notification.innerHTML = '<i class="fas fa-wifi-slash"></i> Modo offline';
+  notification.innerHTML = '📡 Modo offline';
   notification.style.cssText = `
     position: fixed;
     top: 10px;
     right: 10px;
-    background: var(--warning-color);
+    background: #FFA500;
     color: white;
     padding: 8px 16px;
     border-radius: 20px;
@@ -833,7 +807,6 @@ function showOfflineNotification() {
     align-items: center;
     gap: 8px;
     z-index: 10000;
-    animation: slideInRight 0.3s ease;
   `;
   document.body.appendChild(notification);
   
